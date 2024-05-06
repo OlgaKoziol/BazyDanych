@@ -9,7 +9,13 @@
 
 # 1.	Wymagania i funkcje systemu
 
-(np. lista wymagań, np. historyjki użytkownika, np. przypadki użycia itp.)
+Główną funkcją systemu jest wspomaganie działalności firmy świadczącej usługi turystyczne dla klientów indywidualnych oraz firm.
+
+Klientom powinien on udostępniać możliwość zarezerwowania wycieczki. Aby to wykonać, klient musi wprowadzić swoje dane, liczbę uczestników, ich dane roraz id wycieczki i wybrać, jakie usługi chce zarezerwować. 
+
+Wówczas tabele zostają uzupełnione o podane wyżej dane, a dodatkowo id klienta oraz datę dokonania rezerwacji. Automatycznie wprowadzana jest również data, do której możliwe jest dokonanie zmian w zamówieniu oraz koszt całego zamówienia. Aktualizowana jest również liczba dostępnych miejsc.
+
+Rolą administratora jest dodawanie do bazy wycieczek, możliwych dla nich usług oraz limitów miejsc. 
 
 # 2.	Baza danych
 
