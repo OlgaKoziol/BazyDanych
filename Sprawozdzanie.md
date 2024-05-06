@@ -21,7 +21,7 @@ Rolą administratora jest dodawanie do bazy wycieczek, możliwych dla nich usłu
 
 ## Schemat bazy danych
 
-(diagram (rysunek) przedstawiający schemat bazy danych) 
+![](schemat.png)
 
 ## Opis poszczególnych tabel
 
