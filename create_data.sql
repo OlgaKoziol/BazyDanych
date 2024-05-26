@@ -1,184 +1,72 @@
-INSERT INTO Klienci (typ_klienta, imie, nazwisko, adres, miasto, kraj, telefon)
-VALUES
-('I', 'Jan', 'Kowalski', 'Ul. Kwiatowa 1', 'Warszawa', 'Polska', '123-456-789'),
-('F', 'Anna', 'Nowak', 'Ul. Lipowa 2', 'Kraków', 'Polska', '987-654-321'),
-('I', 'Piotr', 'Wiśniewski', 'Ul. Dębowa 3', 'Wrocław', 'Polska', '111-222-333'),
-('F', 'Maria', 'Wójcik', 'Ul. Sosnowa 4', 'Poznań', 'Polska', '444-555-666'),
-('I', 'Krzysztof', 'Kowalczyk', 'Ul. Brzozowa 5', 'Gdańsk', 'Polska', '777-888-999'),
-('F', 'Magdalena', 'Lewandowska', 'Ul. Jesionowa 6', 'Łódź', 'Polska', '101-202-303'),
-('I', 'Tomasz', 'Zieliński', 'Ul. Grabowa 7', 'Szczecin', 'Polska', '404-505-606'),
-('F', 'Katarzyna', 'Szymańska', 'Ul. Modrzewiowa 8', 'Bydgoszcz', 'Polska', '707-808-909'),
-('I', 'Paweł', 'Woźniak', 'Ul. Akacjowa 9', 'Lublin', 'Polska', '010-111-212'),
-('F', 'Agnieszka', 'Dąbrowska', 'Ul. Świerkowa 10', 'Katowice', 'Polska', '313-414-515');
+-- Insert data into Kraje
+INSERT INTO Kraje (id_kraju, nazwa_kraju) VALUES 
+('PL', 'Poland'),
+('DE', 'Germany'),
+('FR', 'France');
+('ES', 'Spain');
+('GR', 'Greece');
 
-INSERT INTO Kraje (id_kraju, nazwa_kraju) VALUES
-('JP', 'Japonia'),
-('CN', 'Chiny'),
-('RU', 'Rosja'),
-('IN', 'Indie'),
-('BR', 'Brazylia'),
-('CA', 'Kanada'),
-('AU', 'Australia'),
-('KR', 'Korea Południowa'),
-('IT', 'Włochy'),
-('ES', 'Hiszpania'),
-('MX', 'Meksyk'),
-('ID', 'Indonezja'),
-('TR', 'Turcja'),
-('NL', 'Holandia'),
-('SA', 'Arabia Saudyjska'),
-('CH', 'Szwajcaria'),
-('SE', 'Szwecja'),
-('BE', 'Belgia'),
-('AT', 'Austria'),
-('PL', 'Polska');\
+-- Insert data into Miasta
+INSERT INTO Miasta (id_kraju, nazwa_miasta) VALUES 
+(1, 'PL', 'Warsaw'),
+(2, 'DE', 'Berlin'),
+(3, 'FR', 'Paris');
+(4, 'ES', 'Barcelona');
+(5, 'ES', 'Madrid');
+(6, 'GR', 'Athens');
+(7, 'PL', 'Cracow');
 
-INSERT INTO Miasta (id_kraju, nazwa_miasta) VALUES
-('JP', 'Tokio'),
-('CN', 'Pekin'),
-('RU', 'Moskwa'),
-('IN', 'Delhi'),
-('BR', 'São Paulo'),
-('CA', 'Toronto'),
-('AU', 'Sydney'),
-('KR', 'Seul'),
-('IT', 'Rzym'),
-('ES', 'Madryt'),
-('MX', 'Meksyk'),
-('ID', 'Dżakarta'),
-('TR', 'Stambuł'),
-('NL', 'Amsterdam'),
-('SA', 'Rijad'),
-('CH', 'Zurych'),
-('SE', 'Sztokholm'),
-('BE', 'Bruksela'),
-('AT', 'Wiedeń'),
-('PL', 'Warszawa');
+-- Insert data into Klienci
+INSERT INTO Klienci (id_klienta, typ_klienta, imie, nazwisko, adres, miasto, kraj, telefon) VALUES 
+(1, 'I', 'Jan', 'Kowalski', 'ul. Polna 10', 'Warsaw', 'Poland', '123456789'),
+(2, 'F', 'Anna', 'Nowak', 'ul. Miodowa 2', 'Warsaw', 'Poland', '987654321');
+(3, 'I', 'Piotr', 'Wójcik', 'ul. Czarnowiejska 20', 'Cracow', 'Poland', '321654987');
+(4, 'I', 'Katarzyna', 'Nowakowska', 'ul. Reymonta 34', 'Cracow', 'Poland', '321987654');
 
-INSERT INTO Rezerwacje_wycieczek (id_rezerwacji, id_wycieczki, id_statusu, id_klienta, liczba_uczestnikow, suma_wycieczki)
-VALUES
-(1, 1, 1, 1, 2, 250.00),
-(2, 1, 1, 2, 1, 150.00),
-(3, 2, 1, 3, 3, 400.00),
-(4, 2, 0, 4, 2, 300.00),
-(5, 3, 1, 5, 1, 200.00),
-(6, 3, 1, 6, 4, 500.00),
-(7, 4, 1, 7, 2, 350.00),
-(8, 4, 0, 8, 3, 450.00),
-(9, 5, 1, 9, 1, 150.00),
-(10, 5, 1, 10, 2, 250.00),
-(11, 6, 1, 11, 3, 400.00),
-(12, 6, 1, 12, 2, 300.00),
-(13, 7, 1, 13, 1, 200.00),
-(14, 7, 0, 14, 4, 500.00),
-(15, 8, 1, 15, 2, 350.00);
+-- Insert data into Wycieczki
+INSERT INTO Wycieczki (id_miasta, data_wyjazdu, data_przyjazdu, miejsce_wyjazdu, liczba_miejsc, cena) VALUES 
+(1, '2024-07-01 09:00:00', '2024-07-10 18:00:00', 'Warsaw', 30, 2000.00),
+(2, '2024-08-01 09:00:00', '2024-08-10 18:00:00', 'Berlin', 20, 1500.00);
+(3, '2024-07-15 09:00:00', '2024-07-25 18:00:00', 'Cracow', 10, 1200.00);
+(4, '2024-08-15 09:00:00', '2024-08-25 18:00:00', 'Warsaw', 15, 1600.00);
 
-INSERT INTO Wycieczki (id_miasta, data_wyjazdu, data_przyjazdu, miejsce_wyjazdu, liczba_miejsc, cena) VALUES
-(1, '2024-06-01 07:45', '2024-06-15 19:30', 'Kraków', 50, 3500.00),
-(5, '2024-07-01 09:30', '2024-07-15 21:15', 'Gdańsk', 45, 3200.00),
-(9, '2024-08-01 10:15', '2024-08-15 22:00', 'Warszawa', 60, 4500.00),
-(13, '2024-09-01 11:00', '2024-09-15 23:45', 'Wrocław', 40, 4000.00),
-(17, '2024-10-01 12:45', '2024-10-15 13:30', 'Poznań', 55, 4800.00),
-(3, '2024-11-01 14:30', '2024-11-15 15:15', 'Łódź', 70, 4200.00),
-(7, '2024-12-01 15:15', '2024-12-15 17:00', 'Katowice', 30, 3900.00),
-(11, '2025-01-01 16:00', '2025-01-15 17:45', 'Lublin', 65, 3100.00),
-(15, '2025-02-01 17:45', '2025-02-15 19:30', 'Bydgoszcz', 75, 3500.00),
-(19, '2025-03-01 18:30', '2025-03-15 20:15', 'Szczecin', 50, 4000.00),
-(2, '2025-04-01 19:15', '2025-04-15 21:00', 'Białystok', 60, 4200.00),
-(6, '2025-05-01 20:00', '2025-05-15 21:45', 'Rzeszów', 80, 4400.00),
-(10, '2025-06-01 21:45', '2025-06-15 23:30', 'Gdynia', 55, 3600.00),
-(14, '2025-07-01 22:30', '2025-07-15 10:15', 'Sopot', 65, 3700.00),
-(18, '2025-08-01 23:15', '2025-08-15 11:00', 'Opole', 70, 4100.00),
-(4, '2025-09-01 07:00', '2025-09-15 12:45', 'Radom', 40, 3300.00),
-(8, '2025-10-01 08:45', '2025-10-15 13:30', 'Kielce', 75, 3500.00),
-(12, '2025-11-01 09:30', '2025-11-15 14:15', 'Toruń', 60, 3900.00),
-(16, '2025-12-01 10:15', '2025-12-15 15:00', 'Zielona Góra', 45, 3700.00),
-(20, '2026-01-01 11:00', '2026-01-15 15:45', 'Olsztyn', 50, 4500.00);
+-- Insert data into Statusy
+INSERT INTO Statusy (id_statusu, status) VALUES 
+(0, 'Cancelled'),
+(1, 'Confirmed');
 
-INSERT INTO Uslugi (id_wycieczki, nazwa, liczba_miejsc, cena) VALUES
-(1, 'Zwiedzanie świątyni Asakusa', 30, 50.00),
-(2, 'Spacer po Parku Ibirapuera', 40, 45.00),
-(17, 'Wycieczka do Pałacu Gyeongbokgung', 20, 55.00),
-(18, 'Wizyta w Parku Narodowym Taman Mini', 20, 50.00),
-(9, 'Spacer po Al-Turaif', 25, 55.00),
-(13, 'Spacer po Parku Retiro', 30, 60.00),
-(19, 'Wycieczka do Zoo w Zurychu', 20, 40.00),
-(20, 'Zwiedzanie Starego Miasta', 20, 50.00),
-(3, 'Zwiedzanie Koloseum', 35, 70.00),
-(4, 'Wizyta w Pałacu Topkapi', 35, 65.00),
-(5, 'Zwiedzanie Muzeum Vasa', 35, 75.00),
-(10, 'Spacer po Pałacu Schönbrunn', 25, 65.00),
-(11, 'Wycieczka po Zakazanym Mieście', 25, 70.00),
-(12, 'Wycieczka do CN Tower', 30, 65.00),
-(6, 'Zwiedzanie Kremla', 20, 60.00),
-(7, 'Rejs statkiem po Zatoce Sydney', 25, 80.00),
-(8, 'Zwiedzanie piramid w Teotihuacán', 25, 75.00),
-(14, 'Zwiedzanie Muzeum Van Gogha', 30, 70.00),
-(15, 'Wizyta w Atomium', 30, 60.00),
-(16, 'Wizyta w Czerwonym Fort', 35, 55.00)
+-- Insert data into Rezerwacje_wycieczek
+INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_statusu, id_klienta, liczba_uczestnikow, suma_wycieczki) VALUES 
+(1, 1, 1, 2, 4000.00),
+(2, 1, 2, 1, 1500.00);
+(1, 1, 3, 3, 6000.00);
+(3, 1, 2, 1, 1200.00);
+(4, 0, 4, 1, 16000.00);
 
-insert into Statusy (id_statusu,status) values (0,'Niedostepne'),(1,'Dostepne')
+-- Insert data into Uslugi
+INSERT INTO Uslugi (id_wycieczki, nazwa, liczba_miejsc, cena) VALUES 
+(1, 'City Tour', 30, 300.00),
+(2, 'Museum Visit', 20, 100.00);
+(3, 'Wawel Castle', 5, 150.00)
 
-select * from Statusy
+-- Insert data into Rezerwacje_uslugi
+INSERT INTO Rezerwacje_uslugi (id_rezerwacji, id_uslugi, liczba_uczestnikow, cena, zaplacono) VALUES 
+(1, 1, 2, 600.00, 600.00),
+(2, 2, 1, 100.00, 100.00);
 
-INSERT INTO Uczestnicy (id_rezerwacji, imie, nazwisko, telefon)
-VALUES
-    (1, 'Anna', 'Nowak', '123456789'),
-    (1, 'Piotr', 'Kowalski', '987654321'),
-    (5, 'Joanna', 'Wiśniewska', '555123456'),
-    (5, 'Michał', 'Lewandowski', '555987654'),
-    (5, 'Katarzyna', 'Dąbrowska', '555789123'),
-    (9, 'Jan', 'Woźniak', '111222333'),
-    (9, 'Małgorzata', 'Kamińska', '444555666'),
-    (9, 'Andrzej', 'Kowalczyk', '777888999'),
-    (9, 'Agnieszka', 'Zielińska', '111444777'),
-    (13, 'Marek', 'Szymański', '222333444'),
-    (13, 'Beata', 'Woźniak', '555333111'),
-    (17, 'Krzysztof', 'Kozłowski', '444111777'),
-    (17, 'Elżbieta', 'Jankowska', '222555888'),
-    (17, 'Adam', 'Mazur', '333888999'),
-    (3, 'Marta', 'Wojciechowska', '123123123'),
-    (3, 'Paweł', 'Kwiatkowski', '456456456'),
-    (3, 'Justyna', 'Kaczmarek', '789789789'),
-    (3, 'Tomasz', 'Piotrowski', '321321321'),
-    (7, 'Monika', 'Grabowska', '654654654'),
-    (7, 'Rafał', 'Nowakowski', '987987987'),
-    (11, 'Michał', 'Wróbel', '357357357'),
-    (11, 'Agata', 'Michalska', '246246246'),
-    (11, 'Robert', 'Adamczyk', '135135135'),
-    (15, 'Anna', 'Król', '531531531'),
-    (15, 'Kamil', 'Sikora', '642642642'),
-    (15, 'Magdalena', 'Krajewska', '753753753'),
-    (15, 'Kacper', 'Wojcik', '864864864'),
-    (19, 'Julia', 'Nowicka', '975975975'),
-    (19, 'Jakub', 'Witkowski', '123987654'),      
-    (2, 'Weronika', 'Kowal', '111222333'),
-    (2, 'Ryszard', 'Michalak', '444555666'),
-    (2, 'Natalia', 'Nowakowska', '777888999'),
-    (6, 'Dawid', 'Zielinski', '111444777'),
-    (6, 'Angelika', 'Lewandowska', '555333111'),
-    (6, 'Kornelia', 'Duda', '444111777'),
-    (6, 'Łukasz', 'Zając', '789456123'),
-    (10, 'Artur', 'Mazur', '222555888'),
-    (10, 'Agnieszka', 'Wojciechowska', '333888999'),   
-    (14, 'Marcin', 'Kaczmarek', '456456456'),
-    (14, 'Karolina', 'Nowakowska', '789789789'),
-    (14, 'Mateusz', 'Wiśniewski', '321321321'),
-    (18, 'Kamil', 'Zając', '123123123'),
-    (18, 'Dominik', 'Kowalczyk', '654654654'),
-    (18, 'Klaudia', 'Szymańska', '987987987'),
-    (18, 'Szymon', 'Wojciechowski', '159159159'),
-    (4, 'Zuzanna', 'Lewandowska', '357357357'),
-    (4, 'Konrad', 'Jankowski', '246246246'),   
-    (8, 'Jan', 'Mazur', '531531531'),
-    (8, 'Aleksandra', 'Kaczmarek', '642642642'),
-    (8, 'Kacper', 'Pawlak', '753753753'),
-    (12, 'Wiktoria', 'Nowak', '864864864'),
-    (12, 'Piotr', 'Kowalczyk', '975975975'),
-    (12, 'Agnieszka', 'Kowalik', '123987654'),
-    (12, 'Ewa', 'Kowalska', '135135135'),
-    (16, 'Adrian', 'Nowak', '456789123'),
-    (16, 'Weronika', 'Kaczmarek', '789456123'),
-    (20, 'Hubert', 'Szymański', '987654321'),
-    (20, 'Oliwia', 'Jastrzębska', '456789123'),
-    (20, 'Karolina', 'Pawłowska', '159159159');
+-- Insert data into Uczestnicy
+INSERT INTO Uczestnicy (id_rezerwacji, imie, nazwisko, telefon) VALUES 
+(1, 'Piotr', 'Kowalski', '123123123'),
+(1, 'Maria', 'Kowalska', '321321321');
+(2, 'Jan', 'Nowak', '111222333');
+()
+
+-- Insert data into Uczestnicy_uslugi
+INSERT INTO Uczestnicy_uslugi (id_uczestnika, id_rezerwacji_uslugi) VALUES 
+(1, 1),
+(2, 1);
+
+-- Insert data into Wplaty
+INSERT INTO Wplaty (id_klienta, id_rezerwacji, wplata) VALUES 
+(1, 1, 2000.00),
+(2, 2, 1500.00);

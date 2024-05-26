@@ -87,7 +87,7 @@ CREATE TABLE Uczestnicy_uslugi (
 	FOREIGN KEY (id_rezerwacji_uslugi) REFERENCES Rezerwacje_uslugi(id_rezerwacji_uslugi)
 );
 
-CREATE TABLE Wpłaty (
+CREATE TABLE Wplaty (
     id_wplaty int IDENTITY(1,1) PRIMARY KEY,
     id_klienta int NOT NULL,
     id_rezerwacji int NOT NULL,
