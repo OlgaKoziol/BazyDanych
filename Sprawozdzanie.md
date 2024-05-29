@@ -30,22 +30,27 @@ Nazwa tabeli: Klienci
 
 | Nazwa atrybutu | Typ | Opis/Uwagi |
 | -------------- | --- | ---------- |
+| typ_klienta | varchar (50) | Może przyjmować dwie wartości: I - indywidualny, F - firma |
 | id_klienta   |  int   |    Klucz główny, niepowtarzalny, który się inkrementuje automatycznie        |
 | imie   |  varchar(255)   |     Imię klienta płacącego za wycieczkę       |
 |nazwisko|varchar(255)|Nazwisko klienta płacącego za wycieczkę |
 |adres|varchar(255)|Adres klienta płacącego za wycieczkę|
+| miasto | varchar (255) | Adres - miasto |
+| kraj | varchar (255) | Adres - kraj |
 |telefon|varchar(255)|Numer telefonu klienta płacącego za wycieczkę|
 
 - kod DDL
 
 ```sql
 CREATE TABLE Klienci (
-    id_klienta int  NOT NULL,
+    typ_klienta varchar(50) NOT NULL CHECK (typ_klienta in ('I', 'F')),
+    id_klienta int IDENTITY(1,1) PRIMARY KEY,
     imie varchar(255)  NOT NULL,
     nazwisko varchar(255)  NOT NULL,
     adres varchar(255)  NOT NULL,
-    telefon varchar(255)  NOT NULL,
-    CONSTRAINT Klienci_pk PRIMARY KEY (id_klienta)
+    miasto varchar(255) NOT NULL,
+    kraj varchar(255) NOT NULL,
+    telefon varchar(255)  NOT NULL
 );
 ```
 
@@ -62,9 +67,8 @@ Nazwa tabeli: Kraje
 
 ```sql
 CREATE TABLE Kraje (
-    id_kraju varchar(2)  NOT NULL,
+    id_kraju varchar(2) NOT NULL PRIMARY KEY,
     nazwa_kraju varchar(255)  NOT NULL,
-    CONSTRAINT Kraje_pk PRIMARY KEY (id_kraju)
 );
 ```
 
@@ -82,66 +86,38 @@ Nazwa tabeli: Miasta
 
 ```sql
 CREATE TABLE Miasta (
-    id_miasta int  NOT NULL,
+	id_miasta int IDENTITY(1,1) PRIMARY KEY,
     id_kraju varchar(2)  NOT NULL,
     nazwa_miasta varchar(255)  NOT NULL,
-    CONSTRAINT Miasta_pk PRIMARY KEY (id_miasta)
+    FOREIGN KEY (id_kraju) REFERENCES Kraje(id_kraju)
 );
 ```
+Nazwa tabeli: Wycieczki
+- Opis:  
 
-Nazwa tabeli: Rezerwacje_wycieczek
-- Opis:
-
-| Nazwa atrybutu | Typ | Opis/Uwagi |
-| -------------- | --- | ---------- |
-| id_rezerwacji   |  int  |    Klucz główny, niepowtarzalny, który się inkrementuje       |
-| id_wycieczki   |  int  |    Klucz obcy, z tabeli Wycieczki      |
-| id_klienta | int | Klucz obcy, z tabeli Klienci |
-| id_statusu | int | Klucz obcy, z tabeli słownikowej Statusy |
-| liczba_uczestnikow | int | Liczba uczestników |
-| cena | decimal (2,10) | Łączna cena całej rezerwacji |
-| zaplacono | decimal (2,10) | Zapłacona kwota |
-
+| Nazwa atrybutu | Typ | Opis/Uwagi                                      |
+| -------------- | --- | ----------------------------------------------- |
+| id_wycieczki   | int | Klucz główny, niepowtarzalny, który się inkrementuje automatycznie |
+|id_miasta | int | Nazwa miasta |
+|data_wyjazdu|date|Data rozpoczęcia wycieczki|
+|data_przyjazdu|date|Data zakończenia wycieczki|
+|miejsce_wyjazdu|varchar(255)|Miejsce wyjazdu|
+|liczba_miejsc|int|Liczba dostępnych miejsc|
+|cena|decimal(10,2)|Cena wycieczki zł/gr|
+|data_rozpoczecia_rezerwacji | date | data, od kiedy można rezerwować wycieczkę |
 
 - kod DDL
 
 ```sql
-CREATE TABLE Rererwacje_wycieczek (
-    id_rezerwacji int  NOT NULL,
-    id_wycieczki int  NOT NULL,
-    id_klienta int  NOT NULL,
-    id_statusu int  NOT NULL,
-    liczba_uczestnikow int  NOT NULL,
-    cena decimal(10,2)  NOT NULL,
-    zaplacono decimal(10,2)  NOT NULL,
-    CONSTRAINT Rererwacje_wycieczek_pk PRIMARY KEY (id_rezerwacji)
-);
-```
-
-Nazwa tabeli: Rezerwacje_uslugi
-- Opis:
-
-| Nazwa atrybutu | Typ | Opis/Uwagi |
-| -------------- | --- | ---------- |
-| id_rezerwacji_uslugi   |  int  |    Klucz główny, niepowtarzalny, który się inkrementuje       |
-| id_rezerwacji   |  int  |    Klucz obcy, z tabeli Rezerwacje_wycieczek      |
-| id_uslugi | int | Klucz obcy, z tabeli Uslugi |
-| liczba_uczestnikow | int | Liczba uczestników |
-| cena | decimal (2,10) | Łączna cena strakcji |
-| zaplacono | decimal (2,10) | Zapłacona kwota |
-
-
-- kod DDL
-
-```sql
-CREATE TABLE Rezerwacje_uslugi (
-    id_rezerwacji_uslugi int  NOT NULL,
-    id_rezerwacji int  NOT NULL,
-    id_uslugi int  NOT NULL,
-    liczba_uczestnikow int  NOT NULL,
-    cena decimal(10,2)  NOT NULL,
-    zaplacono decimal(10,2)  NOT NULL,
-    CONSTRAINT Rezerwacje_uslugi_pk PRIMARY KEY (id_rezerwacji_uslugi)
+CREATE TABLE Wycieczki (
+    id_wycieczki int IDENTITY(1,1) PRIMARY KEY,
+    id_miasta int NOT NULL,
+    data_wyjazdu datetime NOT NULL,
+    data_przyjazdu datetime NOT NULL,
+    miejsce_wyjazdu varchar(255) NOT NULL,
+    liczba_miejsc int NOT NULL CHECK (liczba_miejsc > 0),
+    cena decimal(10,2) NOT NULL CHECK (cena > 0),
+    FOREIGN KEY (id_miasta) REFERENCES Miasta(id_miasta)
 );
 ```
 
@@ -157,48 +133,39 @@ Nazwa tabeli: Statusy
 
 ```sql
 CREATE TABLE Statusy (
-    id_statusu int  NOT NULL,
+    id_statusu int  NOT NULL CHECK (id_statusu in (0, 1)) PRIMARY KEY,
     status varchar(255)  NOT NULL,
-    CONSTRAINT Statusy_pk PRIMARY KEY (id_statusu)
 );
 ```
-Nazwa tabeli: Uczestnicy
+
+Nazwa tabeli: Rezerwacje_wycieczek
 - Opis:
 
 | Nazwa atrybutu | Typ | Opis/Uwagi |
 | -------------- | --- | ---------- |
-| id_uczestnika  |  int   |    Klucz główny, niepowtarzalny, który się inkrementuje automatycznie        |
-|id_rezerwacji|int |Klucz obcy z tabeli rezerwacje|
-|imie|varchar(255)|Imie uczestnika wycieczki|
-|nazwisko|varchar(255)|Nazwisko uczestnika wycieczki|
-|telefon|varchar(255)|Numer telefonu uczestnika wycieczki|
+| id_rezerwacji   |  int  |    Klucz główny, niepowtarzalny, który się inkrementuje       |
+| id_wycieczki   |  int  |    Klucz obcy, z tabeli Wycieczki      |
+| id_klienta | int | Klucz obcy, z tabeli Klienci |
+| id_statusu | int | Klucz obcy, z tabeli słownikowej Statusy |
+| liczba_uczestnikow | int | Liczba uczestników |
+| suma_wycieczki | decimal(10,2) | koszt rezerwacji |
+
+
+- kod DDL
 
 ```sql
-CREATE TABLE Uczestnicy (
-    id_uczestnika int  NOT NULL,
-    id_rezerwacji int  NOT NULL,
-    imie varchar(255)  NOT NULL,
-    nazwisko varchar(255)  NOT NULL,
-    telefon varchar(255)  NOT NULL,
-    CONSTRAINT Uczestnicy_pk PRIMARY KEY (id_uczestnika)
+CREATE TABLE Rezerwacje_wycieczek (
+    id_rezerwacji int IDENTITY(1,1) PRIMARY KEY,
+    id_wycieczki int NOT NULL,
+    id_statusu int NOT NULL CHECK (id_statusu in (0, 1)),
+    id_klienta int NOT NULL,
+    liczba_uczestnikow int NOT NULL CHECK (liczba_uczestnikow > 0),
+    suma_wycieczki decimal(10,2) NOT NULL CHECK (suma_wycieczki > 0),
+	FOREIGN KEY (id_wycieczki) REFERENCES Wycieczki(id_wycieczki),
+	FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
+	FOREIGN KEY (id_statusu) REFERENCES Statusy(id_statusu)
 );
-```
-Nazwa tabeli: Uczestnicy_uslugi
-- Opis:
 
-| Nazwa atrybutu | Typ | Opis/Uwagi |
-| -------------- | --- | ---------- |
-| id_uczestnika_uslugi  |  int   |    Klucz główny, niepowtarzalny, który się inkrementuje automatycznie        |
-|id_uczestnika|int |Klucz obcy z tabeli Uczestnicy|
-|id_rezerwacji_uslugi | int | Klucz obcy z tabeli Rezerwacje_uslugi |
-
-```sql
-CREATE TABLE Uczestnicy_uslugi (
-    id_uczestnika_uslugi int  NOT NULL,
-    id_uczestnika int  NOT NULL,
-    id_rezerwacji_uslugi int  NOT NULL,
-    CONSTRAINT Uczestnicy_uslugi_pk PRIMARY KEY (id_uczestnika_uslugi)
-);
 ```
 
 Nazwa tabeli: Uslugi
@@ -216,40 +183,102 @@ Nazwa tabeli: Uslugi
 
 ```sql
 CREATE TABLE Uslugi (
-    id_uslugi int  NOT NULL,
-    id_wycieczki int  NOT NULL,
+	id_uslugi int IDENTITY(1,1) PRIMARY KEY,
+	id_wycieczki int NOT NULL,
     nazwa varchar(255)  NOT NULL,
-    liczba_miejsc int  NOT NULL,
-    cena decimal(10,2)  NOT NULL,
-    CONSTRAINT Uslugi_pk PRIMARY KEY (id_uslugi)
+    liczba_miejsc int NOT NULL CHECK (liczba_miejsc > 0),
+    cena decimal(10,2) NOT NULL CHECK (cena > 0),
+    FOREIGN KEY (id_wycieczki) REFERENCES Wycieczki(id_wycieczki)
 );
 ```
 
-Nazwa tabeli: Wycieczki
-- Opis:  
+Nazwa tabeli: Rezerwacje_uslugi
+- Opis:
 
-| Nazwa atrybutu | Typ | Opis/Uwagi                                      |
-| -------------- | --- | ----------------------------------------------- |
-| id_wycieczki   | int | Klucz główny, niepowtarzalny, który się inkrementuje automatycznie |
-|id_miasta | int | Nazwa miasta |
-|data_wyjazdu|date|Data rozpoczęcia wycieczki|
-|data_przyjazdu|date|Data zakończenia wycieczki|
-|miejsce_wyjazdu|varchar(255)|Miejsce wyjazdu|
-|liczba_miejsc|int|Liczba dostępnych miejsc|
-|cena|double(10,2)|Cena wycieczki zł/gr|
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+| id_rezerwacji_uslugi   |  int  |    Klucz główny, niepowtarzalny, który się inkrementuje       |
+| id_rezerwacji   |  int  |    Klucz obcy, z tabeli Rezerwacje_wycieczek      |
+| id_uslugi | int | Klucz obcy, z tabeli Uslugi |
+| liczba_uczestnikow | int | Liczba uczestników |
+| cena | decimal (10,2) | Łączna cena atrakcji |
+| zaplacono | decimal (10,2) | Zapłacona kwota |
 
 - kod DDL
 
 ```sql
-CREATE TABLE Wycieczki (
-    id_wycieczki int  NOT NULL,
-    id_miasta int  NOT NULL,
-    data_wyjazdu datetime  NOT NULL,
-    data_przyjazdu datetime  NOT NULL,
-    miejsce_wyjazdu varchar(255)  NOT NULL,
-    liczba_miejsc int  NOT NULL,
-    cena double(10,2)  NOT NULL,
-    CONSTRAINT Wycieczki_pk PRIMARY KEY (id_wycieczki)
+CREATE TABLE Rezerwacje_uslugi (
+    id_rezerwacji_uslugi int IDENTITY(1,1) PRIMARY KEY,
+    id_rezerwacji int  NOT NULL,
+    id_uslugi int  NOT NULL,
+    liczba_uczestnikow int  NOT NULL CHECK (liczba_uczestnikow > 0),
+    cena decimal(10,2)  NOT NULL CHECK (cena > 0),
+    zaplacono decimal(10,2)  NOT NULL,
+    FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji),
+	FOREIGN KEY (id_uslugi) REFERENCES Uslugi(id_uslugi)
+);
+```
+
+Nazwa tabeli: Uczestnicy
+- Opis:
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+| id_uczestnika  |  int   |    Klucz główny, niepowtarzalny, który się inkrementuje automatycznie |
+|id_rezerwacji|int |Klucz obcy z tabeli rezerwacje|
+|imie|varchar(255)|Imie uczestnika wycieczki|
+|nazwisko|varchar(255)|Nazwisko uczestnika wycieczki|
+|telefon|varchar(255)|Numer telefonu uczestnika wycieczki|
+
+```sql
+CREATE TABLE Uczestnicy (
+    id_uczestnika int IDENTITY(1,1) PRIMARY KEY,
+    id_rezerwacji int NOT NULL,
+    imie varchar(255) NOT NULL,
+    nazwisko varchar(255) NOT NULL,
+    telefon varchar(255) NOT NULL,
+    FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji)
+);
+```
+Nazwa tabeli: Uczestnicy_uslugi
+- Opis:
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|id_uczestnika_uslugi  |  int   |    Klucz główny, niepowtarzalny, który się inkrementuje automatycznie        |
+|id_uczestnika|int |Klucz obcy z tabeli Uczestnicy|
+|id_rezerwacji_uslugi | int | Klucz obcy z tabeli Rezerwacje_uslugi |
+
+```sql
+CREATE TABLE Uczestnicy_uslugi (
+    id_uczestnika_uslugi int IDENTITY(1,1) PRIMARY KEY,
+    id_uczestnika int  NOT NULL,
+    id_rezerwacji_uslugi int  NOT NULL,
+	FOREIGN KEY (id_uczestnika) REFERENCES Uczestnicy(id_uczestnika),
+	FOREIGN KEY (id_rezerwacji_uslugi) REFERENCES Rezerwacje_uslugi(id_rezerwacji_uslugi)
+);
+```
+
+Nazwa tabeli: Wpłaty
+- Opis:  
+
+| Nazwa atrybutu | Typ | Opis/Uwagi                                      |
+| -------------- | --- | ----------------------------------------------- |
+|id_klienta | int | Klucz obcy do tabeli Klienci |
+|id_rezerwacji | int | Klucz obcy do tabeli Rezerwacje |
+|wplata | decimal (10,2) | Wpłacona kwota |
+|id_wplaty | int | Klucz główny, który sie automatycznie inkrementuje | 
+
+- kod DDL
+
+```sql
+CREATE TABLE Wplaty (
+    id_wplaty int IDENTITY(1,1) PRIMARY KEY,
+    id_klienta int NOT NULL,
+    id_rezerwacji int NOT NULL,
+    wplata decimal(10,2) NOT NULL CHECK (wplata > 0),
+    FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
+    FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji)
 );
 ```
 
@@ -258,8 +287,77 @@ CREATE TABLE Wycieczki (
 
 ## Widoki
 
-(dla każdego widoku należy wkleić kod polecenia definiującego widok wraz z komentarzem)
+Nazwa widoku: Lista_uczestnikow_rezerwacji
+- Opis: Lista uczestników rezerwacji
+- kod DDL
+```sql
+CREATE VIEW Lista_uczestnikow_rezerwacji
+AS
+SELECT Rezerwacje_uslugi.id_rezerwacji, Uczestnicy.imie, Uczestnicy.nazwisko
+FROM Rezerwacje_uslugi
+JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji;
 
+```
+Nazwa widoku: Cala_wplata
+- Opis: Wplata dokonana przez klienta
+- kod DDL
+```sql
+CREATE VIEW Cala_wplata
+AS
+SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, SUM(Wplaty.wplata) as CalaWplata
+FROM Klienci
+JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
+GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko;
+
+```
+Nazwa widoku: Liczba_uczestnikow_wycieczki
+- Opis: Liczba uczestnikow wycieczki
+- kod DDL
+```sql
+CREATE VIEW Liczba_uczestnikow_wycieczki
+AS
+SELECT Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa, COUNT(Uczestnicy.id_uczestnika) as LiczbaUczestnikow
+FROM Rezerwacje_uslugi
+JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji
+JOIN Uslugi ON Rezerwacje_uslugi.id_uslugi = Uslugi.id_uslugi
+GROUP BY Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa;
+
+```
+Nazwa widoku: Wycieczka_i_lokalizacja
+- Opis: Lokalizacja wycieczek
+- kod DDL
+```sql
+CREATE VIEW Wycieczka_i_lokalizacja
+AS
+SELECT Wycieczki.id_wycieczki, Wycieczki.data_wyjazdu, Miasta.nazwa_miasta, Kraje.nazwa_kraju
+FROM Wycieczki
+JOIN Miasta ON Wycieczki.id_miasta = Miasta.id_miasta
+JOIN Kraje ON Miasta.id_kraju = Kraje.id_kraju;
+```
+Nazwa widoku: Info_klient
+- Opis: Podstawowe informacje o kliencie
+- kod DDL
+```sql
+CREATE VIEW Info_klient
+AS
+SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji, SUM(Wplaty.wplata) as WszystkieWplaty
+FROM Klienci
+JOIN Rezerwacje_uslugi ON Klienci.id_klienta = Rezerwacje_uslugi.id_rezerwacji
+JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
+GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji;
+
+```
+Nazwa widoku: Dostepne_uslugi_i_cena
+- Opis: Dostępne usługi i ich cena
+- kod DDL
+```sql
+CREATE VIEW Dostepne_uslugi_i_cena
+AS
+SELECT Uslugi.nazwa, Uslugi.cena, Uslugi.liczba_miejsc
+FROM Uslugi
+WHERE Uslugi.liczba_miejsc > 0;
+
+```
 
 ## Procedury/funkcje
 
