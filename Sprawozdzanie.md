@@ -148,7 +148,7 @@ Nazwa tabeli: Rezerwacje_wycieczek
 | id_klienta | int | Klucz obcy, z tabeli Klienci |
 | id_statusu | int | Klucz obcy, z tabeli słownikowej Statusy |
 | liczba_uczestnikow | int | Liczba uczestników |
-| suma_wycieczki | decimal(10,2) | koszt rezerwacji |
+| data_rezerwacji | date | Data rezerwacji |
 
 
 - kod DDL
@@ -160,7 +160,7 @@ CREATE TABLE Rezerwacje_wycieczek (
     id_statusu int NOT NULL CHECK (id_statusu in (0, 1)),
     id_klienta int NOT NULL,
     liczba_uczestnikow int NOT NULL CHECK (liczba_uczestnikow > 0),
-    suma_wycieczki decimal(10,2) NOT NULL CHECK (suma_wycieczki > 0),
+    data_rezerwacji date NOT NULL,
 	FOREIGN KEY (id_wycieczki) REFERENCES Wycieczki(id_wycieczki),
 	FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
 	FOREIGN KEY (id_statusu) REFERENCES Statusy(id_statusu)
@@ -201,9 +201,6 @@ Nazwa tabeli: Rezerwacje_uslugi
 | id_rezerwacji   |  int  |    Klucz obcy, z tabeli Rezerwacje_wycieczek      |
 | id_uslugi | int | Klucz obcy, z tabeli Uslugi |
 | liczba_uczestnikow | int | Liczba uczestników |
-| cena | decimal (10,2) | Łączna cena atrakcji |
-| zaplacono | decimal (10,2) | Zapłacona kwota |
-
 - kod DDL
 
 ```sql
@@ -212,8 +209,6 @@ CREATE TABLE Rezerwacje_uslugi (
     id_rezerwacji int  NOT NULL,
     id_uslugi int  NOT NULL,
     liczba_uczestnikow int  NOT NULL CHECK (liczba_uczestnikow > 0),
-    cena decimal(10,2)  NOT NULL CHECK (cena > 0),
-    zaplacono decimal(10,2)  NOT NULL,
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji),
 	FOREIGN KEY (id_uslugi) REFERENCES Uslugi(id_uslugi)
 );
@@ -361,7 +356,104 @@ WHERE Uslugi.liczba_miejsc > 0;
 
 ## Procedury/funkcje
 
-(dla każdej procedury/funkcji należy wkleić kod polecenia definiującego procedurę wraz z komentarzem)
+- Opis: Procedura wyświetlająca listę uczestników danej rezerwacji
+- kod DDL
+```sql
+create or alter proc lista_uczestnikow_danej_rezerwacji  
+@id_rezerwacji int  
+as  
+begin  
+if not exists (select * from Rezerwacje_wycieczek where id_rezerwacji = @id_rezerwacji)  
+throw 50001, 'Brak rezerwacji o takim id', 1;  
+end;
+select *  
+from Lista_uczestnikow_rezerwacji 
+where id_rezerwacji = @id_rezerwacji; 
+```
+
+- Opis: Procedura wyświetlająca listę wszystkich wplat danego klienta
+- kod DDL
+```sql
+create or alter proc wplaty_danego_klienta
+@id_klienta int  
+as  
+begin  
+if not exists (select * from Klienci where id_klienta = @id_klienta)  
+throw 50001, 'Brak klienta o takim id', 1;  
+end;
+SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, wplaty.wplata
+FROM Klienci
+JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
+where id_klienta = @id_klienta; 
+```
+
+- Opis: Procedura wyświetlająca liczbę uczestników danej usługi
+- kod DDL
+```sql
+create or alter proc liczba_uczestnikow_danej_uslugi
+@id_uslugi int  
+as  
+begin  
+    if not exists (select * from uslugi where id_uslugi = @id_uslugi)  
+        throw 50001, 'Brak wycieczki o takim id', 1;  
+    SELECT id_uslugi, sum(liczba_uczestnikow)
+    FROM Rezerwacje_uslugi
+    where id_uslugi = @id_uslugi
+    group by id_uslugi
+end;
+```
+
+- Opis: Procedura wyświetlająca informacje o danym kliencie
+- kod DDL
+```sql
+create or alter proc informacje_o_danym_kliencie
+@id_klienta int  
+as  
+begin  
+    if not exists (select * from klienci where id_klienta = @id_klienta)  
+        throw 50001, 'Brak klienta o takim id', 1;  
+    SELECT *
+    FROM Info_klient
+    where id_klienta = @id_klienta
+end;
+```
+
+- Opis: Funkcja wyświetlacjąca wpłaty w danym miesiącu
+- kod DDL
+```sql
+create function f_wplaty_w_danym_miesiacu (@month int)  
+returns table  
+as return (  
+select *  
+from wplaty  
+where month(data_wplaty) = @month 
+);
+```
+- Opis: Funkcja wyświetlacjąca wycieczki zarezerwowane w danym miesiącu
+- kod DDL
+```sql
+create function f_rezerwacje_wycieczek_w_danym_miesiacu (@month int)  
+returns table  
+as return (  
+select *
+from Rezerwacje_wycieczek  
+where month(data_rezerwacji) = @month 
+);
+```
+
+
+- Opis: Funkcja wyświetlacjąca wycieczki, które można rezerwować w danym dniu
+- kod DDL
+```sql
+create function f_aktywne_wycieczki (@data date)
+returns table  
+as return (  
+select *
+from wycieczki 
+where data_rozpoczecia_rez <= @data
+);
+```
+
 
 ## Triggery
 
