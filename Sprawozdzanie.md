@@ -148,6 +148,7 @@ Nazwa tabeli: Rezerwacje_wycieczek
 | id_klienta | int | Klucz obcy, z tabeli Klienci |
 | id_statusu | int | Klucz obcy, z tabeli słownikowej Statusy |
 | liczba_uczestnikow | int | Liczba uczestników |
+| data_rezerwacji | date | Data rezerwacji |
 
 
 - kod DDL
@@ -159,6 +160,7 @@ CREATE TABLE Rezerwacje_wycieczek (
     id_statusu int NOT NULL CHECK (id_statusu in (0, 1)),
     id_klienta int NOT NULL,
     liczba_uczestnikow int NOT NULL CHECK (liczba_uczestnikow > 0),
+    data_rezerwacji date NOT NULL,
 	FOREIGN KEY (id_wycieczki) REFERENCES Wycieczki(id_wycieczki),
 	FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
 	FOREIGN KEY (id_statusu) REFERENCES Statusy(id_statusu)
@@ -415,6 +417,43 @@ begin
     where id_klienta = @id_klienta
 end;
 ```
+
+- Opis: Funkcja wyświetlacjąca wpłaty w danym miesiącu
+- kod DDL
+```sql
+create function f_wplaty_w_danym_miesiacu (@month int)  
+returns table  
+as return (  
+select *  
+from wplaty  
+where month(data_wplaty) = @month 
+);
+```
+- Opis: Funkcja wyświetlacjąca wycieczki zarezerwowane w danym miesiącu
+- kod DDL
+```sql
+create function f_rezerwacje_wycieczek_w_danym_miesiacu (@month int)  
+returns table  
+as return (  
+select *
+from Rezerwacje_wycieczek  
+where month(data_rezerwacji) = @month 
+);
+```
+
+
+- Opis: Funkcja wyświetlacjąca wycieczki, które można rezerwować w danym dniu
+- kod DDL
+```sql
+create function f_aktywne_wycieczki (@data date)
+returns table  
+as return (  
+select *
+from wycieczki 
+where data_rozpoczecia_rez <= @data
+);
+```
+
 
 ## Triggery
 

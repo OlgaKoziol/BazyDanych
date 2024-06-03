@@ -175,33 +175,35 @@ CREATE TABLE Rezerwacje_wycieczek (
     id_statusu int NOT NULL CHECK (id_statusu in (0, 1)),
     id_klienta int NOT NULL,
     liczba_uczestnikow int NOT NULL CHECK (liczba_uczestnikow > 0),
+    data_rezerwacji date NOT NULL,
 	FOREIGN KEY (id_wycieczki) REFERENCES Wycieczki(id_wycieczki),
 	FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
 	FOREIGN KEY (id_statusu) REFERENCES Statusy(id_statusu)
 );
 
-INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow)
+INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, data_rezerwacji)
 VALUES
-(1, 1, 1, 2),
-(5, 2, 1, 3),
-(9, 3, 1, 4),
-(13, 4, 1, 2),
-(17, 5, 1, 3),
-(3, 6, 1, 4),
-(7, 7, 1, 2),
-(11, 8, 1, 3),
-(15, 9, 1, 4),
-(19, 10, 1, 2),
-(2, 11, 1, 3),
-(6, 12, 1, 4),
-(10, 13, 1, 2),
-(14, 14, 1, 3),
-(18, 15, 1, 4),
-(4, 16, 1, 2),
-(8, 17, 1, 3),
-(12, 18, 1, 4),
-(16, 19, 1, 2),
-(20, 20, 1, 3);
+(1, 1, 1, 2, '2024-01-01'),
+(5, 2, 1, 3, '2024-01-02'),
+(9, 3, 1, 4, '2024-01-03'),
+(13, 4, 1, 2, '2024-01-04'),
+(17, 5, 1, 3, '2024-01-05'),
+(3, 6, 1, 4, '2024-01-06'),
+(7, 7, 1, 2, '2024-02-07'),
+(11, 8, 1, 3, '2024-02-08'),
+(15, 9, 1, 4, '2024-02-09'),
+(19, 10, 1, 2, '2024-02-10'),
+(2, 11, 1, 3, '2024-02-11'),
+(6, 12, 1, 4, '2024-02-12'),
+(10, 13, 1, 2, '2024-03-13'),
+(14, 14, 1, 3, '2024-03-14'),
+(18, 15, 1, 4, '2024-03-15'),
+(4, 16, 1, 2, '2024-03-16'),
+(8, 17, 1, 3, '2024-03-17'),
+(12, 18, 1, 4, '2024-03-18'),
+(16, 19, 1, 2, '2024-03-19'),
+(20, 20, 1, 3, '2024-03-20');
+
 
 
 CREATE TABLE Wplaty (
@@ -209,32 +211,32 @@ CREATE TABLE Wplaty (
     id_klienta int NOT NULL,
     id_rezerwacji int NOT NULL,
     wplata decimal(10,2) NOT NULL CHECK (wplata > 0),
+    data_wplaty date NOT NULL,
     FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji)
 );
 
-INSERT INTO Wplaty (id_klienta, id_rezerwacji, wplata) VALUES 
-(1, 1, 1000.00),
-(2, 2, 1500.00),
-(3, 3, 2000.00),
-(4, 4, 1800.00),
-(5, 5, 2300.00),
-(6, 6, 1900.00),
-(7, 7, 1800.00),
-(8, 8, 1200.00),
-(9, 9, 1600.00),
-(10, 10, 2000.00),
-(11, 11, 1700.00),
-(12, 12, 2100.00),
-(13, 13, 1400.00),
-(14, 14, 1800.00),
-(15, 15, 2200.00),
-(16, 16, 1600.00),
-(17, 17, 2000.00),
-(18, 18, 1900.00),
-(19, 19, 1700.00),
-(20, 20, 2100.00);
-
+INSERT INTO Wplaty (id_klienta, id_rezerwacji, wplata, data_wplaty) VALUES 
+(1, 1, 1000.00, '2024-02-01'),
+(2, 2, 1500.00, '2024-02-02'),
+(3, 3, 2000.00, '2024-02-03'),
+(4, 4, 1800.00, '2024-02-04'),
+(5, 5, 2300.00, '2024-02-05'),
+(6, 6, 1900.00, '2024-02-06'),
+(7, 7, 1800.00, '2024-03-07'),
+(8, 8, 1200.00, '2024-03-08'),
+(9, 9, 1600.00, '2024-03-09'),
+(10, 10, 2000.00, '2024-03-10'),
+(11, 11, 1700.00, '2024-03-11'),
+(12, 12, 2100.00, '2024-03-12'),
+(13, 13, 1400.00, '2024-04-13'),
+(14, 14, 1800.00, '2024-04-14'),
+(15, 15, 2200.00, '2024-04-15'),
+(16, 16, 1600.00, '2024-04-16'),
+(17, 17, 2000.00, '2024-04-17'),
+(18, 18, 1900.00, '2024-04-18'),
+(19, 19, 1700.00, '2024-04-19'),
+(20, 20, 2100.00, '2024-04-20');
 
 CREATE TABLE Uczestnicy (
     id_uczestnika int IDENTITY(1,1) PRIMARY KEY,
@@ -313,32 +315,32 @@ CREATE TABLE Rezerwacje_uslugi (
     id_rezerwacji int  NOT NULL,
     id_uslugi int  NOT NULL,
     liczba_uczestnikow int  NOT NULL CHECK (liczba_uczestnikow > 0),
+    data_rezerwacji date NOT NULL,
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji),
 	FOREIGN KEY (id_uslugi) REFERENCES Uslugi(id_uslugi)
 );
 
-INSERT INTO Rezerwacje_uslugi (id_rezerwacji, id_uslugi, liczba_uczestnikow) VALUES
-(1, 1, 2),
-(5, 3, 3),
-(9, 19, 4),
-(13, 12, 2),
-(17, 17, 3),
-(3, 5, 4),
-(7, 16, 2),
-(11, 2, 3),
-(15, 4, 4),
-(19, 20, 2),
-(2, 11, 3),
-(6, 9, 4),
-(10, 7, 2),
-(14, 18, 3),
-(18, 14, 4),
-(4, 6, 2),
-(8, 13, 3),
-(12, 15, 4),
-(16, 10, 2),
-(20, 8, 3);
-
+INSERT INTO Rezerwacje_uslugi (id_rezerwacji, id_uslugi, liczba_uczestnikow, data_rezerwacji) VALUES
+(1, 1, 2, '2024-03-01'),
+(5, 3, 3, '2024-03-02'),
+(9, 19, 4, '2024-03-03'),
+(13, 12, 2, '2024-03-04'),
+(17, 17, 3, '2024-03-05'),
+(3, 5, 4, '2024-03-06'),
+(7, 16, 2, '2024-03-07'),
+(11, 2, 3, '2024-03-08'),
+(15, 4, 4, '2024-03-09'),
+(19, 20, 2, '2024-03-10'),
+(2, 11, 3, '2024-03-11'),
+(6, 9, 4, '2024-03-12'),
+(10, 7, 2, '2024-03-13'),
+(14, 18, 3, '2024-03-14'),
+(18, 14, 4, '2024-03-15'),
+(4, 6, 2, '2024-03-16'),
+(8, 13, 3, '2024-03-17'),
+(12, 15, 4, '2024-03-18'),
+(16, 10, 2, '2024-03-19'),
+(20, 8, 3, '2024-03-20');
 
 CREATE TABLE Uczestnicy_uslugi (
     id_uczestnika_uslugi int IDENTITY(1,1) PRIMARY KEY,
