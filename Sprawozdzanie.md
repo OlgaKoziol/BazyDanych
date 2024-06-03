@@ -148,7 +148,6 @@ Nazwa tabeli: Rezerwacje_wycieczek
 | id_klienta | int | Klucz obcy, z tabeli Klienci |
 | id_statusu | int | Klucz obcy, z tabeli słownikowej Statusy |
 | liczba_uczestnikow | int | Liczba uczestników |
-| suma_wycieczki | decimal(10,2) | koszt rezerwacji |
 
 
 - kod DDL
@@ -160,7 +159,6 @@ CREATE TABLE Rezerwacje_wycieczek (
     id_statusu int NOT NULL CHECK (id_statusu in (0, 1)),
     id_klienta int NOT NULL,
     liczba_uczestnikow int NOT NULL CHECK (liczba_uczestnikow > 0),
-    suma_wycieczki decimal(10,2) NOT NULL CHECK (suma_wycieczki > 0),
 	FOREIGN KEY (id_wycieczki) REFERENCES Wycieczki(id_wycieczki),
 	FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
 	FOREIGN KEY (id_statusu) REFERENCES Statusy(id_statusu)
@@ -201,9 +199,6 @@ Nazwa tabeli: Rezerwacje_uslugi
 | id_rezerwacji   |  int  |    Klucz obcy, z tabeli Rezerwacje_wycieczek      |
 | id_uslugi | int | Klucz obcy, z tabeli Uslugi |
 | liczba_uczestnikow | int | Liczba uczestników |
-| cena | decimal (10,2) | Łączna cena atrakcji |
-| zaplacono | decimal (10,2) | Zapłacona kwota |
-
 - kod DDL
 
 ```sql
@@ -212,8 +207,6 @@ CREATE TABLE Rezerwacje_uslugi (
     id_rezerwacji int  NOT NULL,
     id_uslugi int  NOT NULL,
     liczba_uczestnikow int  NOT NULL CHECK (liczba_uczestnikow > 0),
-    cena decimal(10,2)  NOT NULL CHECK (cena > 0),
-    zaplacono decimal(10,2)  NOT NULL,
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji),
 	FOREIGN KEY (id_uslugi) REFERENCES Uslugi(id_uslugi)
 );
