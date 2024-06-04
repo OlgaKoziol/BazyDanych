@@ -293,18 +293,7 @@ FROM Rezerwacje_uslugi
 JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji;
 
 ```
-Nazwa widoku: Cala_wplata
-- Opis: Wplata dokonana przez klienta
-- kod DDL
-```sql
-CREATE VIEW Cala_wplata
-AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, SUM(Wplaty.wplata) as CalaWplata
-FROM Klienci
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko;
 
-```
 Nazwa widoku: Liczba_uczestnikow_wycieczki
 - Opis: Liczba uczestnikow wycieczki
 - kod DDL
@@ -335,13 +324,39 @@ Nazwa widoku: Info_klient
 ```sql
 CREATE VIEW Info_klient
 AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji, SUM(Wplaty.wplata) as WszystkieWplaty
-FROM Klienci
-JOIN Rezerwacje_uslugi ON Klienci.id_klienta = Rezerwacje_uslugi.id_rezerwacji
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji;
-
+SELECT
+    id_klienta,
+    CASE 
+        WHEN typ_klienta = 'F' THEN nazwa_firmy
+        ELSE CONCAT(imie, ' ', nazwisko)
+    END AS nazwa,
+    adres,
+    miasto,
+    kraj,
+    telefon
+FROM Klienci;
 ```
+
+Nazwa widoku: Suma_wplaty
+- Opis: Suma wplaty
+- kod DDL
+```sql
+CREATE VIEW Suma_wplaty
+SELECT 
+    w.id_klienta, 
+    CASE 
+        WHEN k.typ_klienta = 'F' THEN k.nazwa_firmy
+        ELSE CONCAT(k.imie, ' ', k.nazwisko)
+    END AS nazwa,
+    sum(w.wplata) AS Suma_Wplaty
+FROM 
+    Wplaty w
+JOIN 
+    Klienci k ON w.id_klienta = k.id_klienta
+GROUP BY 
+    w.id_klienta, k.typ_klienta, k.nazwa_firmy, k.imie, k.nazwisko;
+```
+
 Nazwa widoku: Dostepne_uslugi_i_cena
 - Opis: Dostępne usługi i ich cena
 - kod DDL
