@@ -4,13 +4,6 @@ SELECT Rezerwacje_uslugi.id_rezerwacji, Uczestnicy.imie, Uczestnicy.nazwisko
 FROM Rezerwacje_uslugi
 JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji;
 
-CREATE VIEW Cala_wplata
-AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, SUM(Wplaty.wplata) as CalaWplata
-FROM Klienci
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko;
-
 CREATE VIEW Liczba_uczestnikow_wycieczki
 AS
 SELECT Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa, COUNT(Uczestnicy.id_uczestnika) as LiczbaUczestnikow
@@ -28,11 +21,33 @@ JOIN Kraje ON Miasta.id_kraju = Kraje.id_kraju;
 
 CREATE VIEW Info_klient
 AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji, SUM(Wplaty.wplata) as WszystkieWplaty
-FROM Klienci
-JOIN Rezerwacje_uslugi ON Klienci.id_klienta = Rezerwacje_uslugi.id_rezerwacji
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji;
+SELECT
+    id_klienta,
+    CASE 
+        WHEN typ_klienta = 'F' THEN nazwa_firmy
+        ELSE CONCAT(imie, ' ', nazwisko)
+    END AS nazwa,
+    adres,
+    miasto,
+    kraj,
+    telefon
+FROM Klienci;
+
+CREATE VIEW Suma_wplaty
+SELECT 
+    w.id_klienta, 
+    CASE 
+        WHEN k.typ_klienta = 'F' THEN k.nazwa_firmy
+        ELSE CONCAT(k.imie, ' ', k.nazwisko)
+    END AS nazwa,
+    sum(w.wplata) AS Suma_Wplaty
+FROM 
+    Wplaty w
+JOIN 
+    Klienci k ON w.id_klienta = k.id_klienta
+GROUP BY 
+    w.id_klienta, k.typ_klienta, k.nazwa_firmy, k.imie, k.nazwisko;
+
 
 CREATE VIEW Dostepne_uslugi_i_cena
 AS
