@@ -134,7 +134,7 @@ CREATE TABLE Statusy (
     status varchar(255)  NOT NULL,
 );
 
-insert into Statusy (id_statusu,status) values (0,'Anulowane'),(1,'Aktywne')
+insert into Statusy (id_statusu,status) values (0,'Anulowane'),(1,'Aktywne')(2,'Zakonczone')
 
 
 CREATE TABLE Klienci (
@@ -145,30 +145,31 @@ CREATE TABLE Klienci (
     adres varchar(255)  NOT NULL,
     miasto varchar(255) NOT NULL,
     kraj varchar(255) NOT NULL,
-    telefon varchar(255)  NOT NULL
+    telefon varchar(255)  NOT NULL,
+    nazwa_firmy varchar(255) NOT NULL
 );
 
 INSERT INTO Klienci (typ_klienta, imie, nazwisko, adres, miasto, kraj, telefon) VALUES
-('I', 'Jan', 'Kowalski', 'Ul. Polna 1', 'Warszawa', 'Polska', '123456789'),
-('F', 'Anna', 'Nowak', 'Ul. Kwiatowa 5', 'Krakow', 'Polska', '987654321'),
-('I', 'Piotr', 'Wójcik', 'Ul. Słoneczna 10', 'Gdansk', 'Polska', '456789123'),
-('F', 'Katarzyna', 'Wiśniewska', 'Ul. Leśna 15', 'Wroclaw', 'Polska', '654321987'),
-('I', 'Michał', 'Kamiński', 'Ul. Ogrodowa 20', 'Poznan', 'Polska', '321987654'),
-('F', 'Magdalena', 'Lewandowska', 'Ul. Lipowa 25', 'Lodz', 'Polska', '789123456'),
-('I', 'Tomasz', 'Zielinski', 'Ul. Parkowa 30', 'Szczecin', 'Polska', '213546879'),
-('F', 'Agnieszka', 'Szymańska', 'Ul. Krótka 35', 'Bydgoszcz', 'Polska', '321654987'),
-('I', 'Andrzej', 'Woźniak', 'Ul. Wąska 40', 'Lublin', 'Polska', '654987321'),
-('F', 'Ewa', 'Dąbrowska', 'Ul. Długa 45', 'Bialystok', 'Polska', '789654123'),
-('I', 'Robert', 'Kozłowski', 'Ul. Szeroka 50', 'Rzeszow', 'Polska', '123789456'),
-('F', 'Barbara', 'Jankowska', 'Ul. Górna 55', 'Gdynia', 'Polska', '456123789'),
-('I', 'Jerzy', 'Mazur', 'Ul. Dolna 60', 'Sopot', 'Polska', '789456123'),
-('F', 'Dorota', 'Pawlak', 'Ul. Poziomkowa 65', 'Opole', 'Polska', '654123789'),
-('I', 'Marcin', 'Adamczyk', 'Ul. Wiśniowa 70', 'Radom', 'Polska', '321789654'),
-('F', 'Paulina', 'Kwiatkowska', 'Ul. Brzozowa 75', 'Kielce', 'Polska', '987123654'),
-('I', 'Krzysztof', 'Piotrowski', 'Ul. Jaworowa 80', 'Torun', 'Polska', '123654987'),
-('F', 'Joanna', 'Grabowska', 'Ul. Jesionowa 85', 'Zielona Gora', 'Polska', '789321654'),
-('I', 'Grzegorz', 'Michalak', 'Ul. Topolowa 90', 'Olsztyn', 'Polska', '456789321'),
-('F', 'Beata', 'Nowicka', 'Ul. Akacjowa 95', 'Katowice', 'Polska', '321456789');
+('I', 'Jan', 'Kowalski', 'Ul. Polna 1', 'Warszawa', 'Polska', '123456789', 'brak'),
+('F', 'Anna', 'Nowak', 'Ul. Kwiatowa 5', 'Krakow', 'Polska', '987654321', 'Kwiatowa'),
+('I', 'Piotr', 'Wójcik', 'Ul. Słoneczna 10', 'Gdansk', 'Polska', '456789123', 'brak'),
+('F', 'Katarzyna', 'Wiśniewska', 'Ul. Leśna 15', 'Wroclaw', 'Polska', '654321987', 'Leśna'),
+('I', 'Michał', 'Kamiński', 'Ul. Ogrodowa 20', 'Poznan', 'Polska', '321987654', 'brak'),
+('F', 'Magdalena', 'Lewandowska', 'Ul. Lipowa 25', 'Lodz', 'Polska', '789123456', 'Lipowa'),
+('I', 'Tomasz', 'Zielinski', 'Ul. Parkowa 30', 'Szczecin', 'Polska', '213546879', 'brak'),
+('F', 'Agnieszka', 'Szymańska', 'Ul. Krótka 35', 'Bydgoszcz', 'Polska', '321654987', 'Krótka'),
+('I', 'Andrzej', 'Woźniak', 'Ul. Wąska 40', 'Lublin', 'Polska', '654987321', 'brak'),
+('F', 'Ewa', 'Dąbrowska', 'Ul. Długa 45', 'Bialystok', 'Polska', '789654123', 'Długa'),
+('I', 'Robert', 'Kozłowski', 'Ul. Szeroka 50', 'Rzeszow', 'Polska', '123789456', 'brak'),
+('F', 'Barbara', 'Jankowska', 'Ul. Górna 55', 'Gdynia', 'Polska', '456123789', 'Górna'),
+('I', 'Jerzy', 'Mazur', 'Ul. Dolna 60', 'Sopot', 'Polska', '789456123', 'brak'),
+('F', 'Dorota', 'Pawlak', 'Ul. Poziomkowa 65', 'Opole', 'Polska', '654123789', 'Poziomkowa'),
+('I', 'Marcin', 'Adamczyk', 'Ul. Wiśniowa 70', 'Radom', 'Polska', '321789654', 'brak'),
+('F', 'Paulina', 'Kwiatkowska', 'Ul. Brzozowa 75', 'Kielce', 'Polska', '987123654', 'Brzozowa'),
+('I', 'Krzysztof', 'Piotrowski', 'Ul. Jaworowa 80', 'Torun', 'Polska', '123654987', 'brak'),
+('F', 'Joanna', 'Grabowska', 'Ul. Jesionowa 85', 'Zielona Gora', 'Polska', '789321654', 'Jesionowa'),
+('I', 'Grzegorz', 'Michalak', 'Ul. Topolowa 90', 'Olsztyn', 'Polska', '456789321', 'brak'),
+('F', 'Beata', 'Nowicka', 'Ul. Akacjowa 95', 'Katowice', 'Polska', '321456789', 'Akacjowa');
 
 
 CREATE TABLE Rezerwacje_wycieczek (
@@ -318,6 +319,7 @@ CREATE TABLE Rezerwacje_uslugi (
     id_uslugi int  NOT NULL,
     liczba_uczestnikow int  NOT NULL CHECK (liczba_uczestnikow > 0),
     data_rezerwacji date NOT NULL,
+    cena decimal(10,2) NOT NULL CHECK (cena > 0),
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji),
 	FOREIGN KEY (id_uslugi) REFERENCES Uslugi(id_uslugi)
 );
