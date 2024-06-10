@@ -39,6 +39,8 @@ Nazwa tabeli: Klienci
 | kraj | varchar (255) | Adres - kraj |
 |telefon|varchar(255)|Numer telefonu klienta płacącego za wycieczkę|
 
+
+
 - kod DDL
 
 ```sql
@@ -284,6 +286,8 @@ CREATE TABLE Wplaty (
 
 Nazwa widoku: Lista_uczestnikow_rezerwacji
 - Opis: Lista uczestników rezerwacji
+- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/26bae6c5-17c7-4237-a3c3-50643a79639e)
+
 - kod DDL
 ```sql
 CREATE VIEW Lista_uczestnikow_rezerwacji
@@ -295,6 +299,8 @@ JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji;
 ```
 Nazwa widoku: Cala_wplata
 - Opis: Wplata dokonana przez klienta
+- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/c513d456-6022-4afb-a1b3-ed0bf7ad5f07)
+
 - kod DDL
 ```sql
 CREATE VIEW Cala_wplata
@@ -307,6 +313,8 @@ GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko;
 ```
 Nazwa widoku: Liczba_uczestnikow_wycieczki
 - Opis: Liczba uczestnikow wycieczki
+- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/19e35501-9a3a-4afc-b632-99504997f308)
+
 - kod DDL
 ```sql
 CREATE VIEW Liczba_uczestnikow_wycieczki
@@ -320,6 +328,8 @@ GROUP BY Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa;
 ```
 Nazwa widoku: Wycieczka_i_lokalizacja
 - Opis: Lokalizacja wycieczek
+- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/6efe16a0-8a1f-4cbb-a28c-3dcd02b403b7)
+
 - kod DDL
 ```sql
 CREATE VIEW Wycieczka_i_lokalizacja
@@ -331,6 +341,8 @@ JOIN Kraje ON Miasta.id_kraju = Kraje.id_kraju;
 ```
 Nazwa widoku: Info_klient
 - Opis: Podstawowe informacje o kliencie
+- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/979e8438-9f2c-4197-9514-962cca9eca7c)
+
 - kod DDL
 ```sql
 CREATE VIEW Info_klient
@@ -344,6 +356,8 @@ GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.i
 ```
 Nazwa widoku: Dostepne_uslugi_i_cena
 - Opis: Dostępne usługi i ich cena
+- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/c9f812ad-b25f-439f-92a5-435604690eaa)
+
 - kod DDL
 ```sql
 CREATE VIEW Dostepne_uslugi_i_cena
