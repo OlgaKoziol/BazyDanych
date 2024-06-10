@@ -454,10 +454,177 @@ where data_rozpoczecia_rez <= @data
 );
 ```
 
+- Opis: Procedura dodająca rezerwacje. Wstawia nową rezerwację do tabeli Rezerwacje_wycieczek i zwraca ID utworzonej rezerwacji.
+- kod DDL
+```sql
+DELIMITER //
+
+CREATE PROCEDURE AddReservation (
+    IN p_id_wycieczki INT,
+    IN p_id_klienta INT,
+    IN p_id_statusu INT,
+    IN p_liczba_uczestnikow INT,
+    IN p_suma_wycieczki DECIMAL(10,2)
+)
+BEGIN
+    DECLARE p_id_rezerwacji INT;
+    
+    -- Insert into Rezerwacje_wycieczek
+    INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, suma_wycieczki)
+    VALUES (p_id_wycieczki, p_id_klienta, p_id_statusu, p_liczba_uczestnikow, p_suma_wycieczki);
+    
+    SET p_id_rezerwacji = LAST_INSERT_ID();
+    
+    -- Return the ID of the new reservation
+    SELECT p_id_rezerwacji AS id_rezerwacji;
+END //
+
+DELIMITER ;
+```
+
+- Opis: Procedura modyfikująca rezerwację. Aktualizuje szczegóły istniejącej rezerwacji w tabeli Rezerwacje_wycieczek na podstawie ID.
+- kod DDL
+```sql
+DELIMITER //
+
+CREATE PROCEDURE ModifyReservation (
+    IN p_id_rezerwacji INT,
+    IN p_id_wycieczki INT,
+    IN p_id_klienta INT,
+    IN p_id_statusu INT,
+    IN p_liczba_uczestnikow INT,
+    IN p_suma_wycieczki DECIMAL(10,2)
+)
+BEGIN
+    -- Update Rezerwacje_wycieczek
+    UPDATE Rezerwacje_wycieczek
+    SET id_wycieczki = p_id_wycieczki,
+        id_klienta = p_id_klienta,
+        id_statusu = p_id_statusu,
+        liczba_uczestnikow = p_liczba_uczestnikow,
+        suma_wycieczki = p_suma_wycieczki
+    WHERE id_rezerwacji = p_id_rezerwacji;
+END //
+
+DELIMITER ;
+
+```
+
+- Opis: Procedura odwołująca rezerwację. Procedura usuwa wszystkie wpisy w tabelach Uczestnicy_uslugi, Uczestnicy, Rezerwacje_uslugi oraz Wplaty, zanim usunie rezerwację z tabeli Rezerwacje_wycieczek.
+- kod DDL
+```sql
+DELIMITER //
+
+CREATE PROCEDURE CancelReservation (
+    IN p_id_rezerwacji INT
+)
+BEGIN
+    -- Delete from Uczestnicy_uslugi
+    DELETE FROM Uczestnicy_uslugi
+    WHERE id_rezerwacji_uslugi IN (SELECT id_rezerwacji_uslugi FROM Rezerwacje_uslugi WHERE id_rezerwacji = p_id_rezerwacji);
+    
+    -- Delete from Uczestnicy
+    DELETE FROM Uczestnicy
+    WHERE id_rezerwacji = p_id_rezerwacji;
+    
+    -- Delete from Rezerwacje_uslugi
+    DELETE FROM Rezerwacje_uslugi
+    WHERE id_rezerwacji = p_id_rezerwacji;
+    
+    -- Delete from Wplaty
+    DELETE FROM Wplaty
+    WHERE id_rezerwacji = p_id_rezerwacji;
+    
+    -- Delete from Rezerwacje_wycieczek
+    DELETE FROM Rezerwacje_wycieczek
+    WHERE id_rezerwacji = p_id_rezerwacji;
+END //
+
+DELIMITER ;
+
+```
+
+
 
 ## Triggery
 
-(dla każdego triggera należy wkleić kod polecenia definiującego trigger wraz z komentarzem)
+- Opis: Trigger aktualizujący liczbę uczestników w rezerwacji usługi po dodaniu nowego uczestnika.
+- kod DDL
+```sql
+CREATE TRIGGER update_participant_count_after_insert
+AFTER INSERT ON Uczestnicy_uslugi
+FOR EACH ROW
+BEGIN
+    UPDATE Rezerwacje_uslugi
+    SET liczba_uczestnikow = liczba_uczestnikow + 1
+    WHERE id_rezerwacji = NEW.id_rezerwacji_uslugi;
+END;
+
+```
+
+- Opis: Trigger aktualizujący liczbę uczestników w rezerwacji usługi po usunięciu uczestnika:
+- kod DDL
+```sql
+CREATE TRIGGER aktualizuj_liczbe_uczestnikow_po_usunieciu
+AFTER DELETE ON Uczestnicy_uslugi
+FOR EACH ROW
+BEGIN
+    UPDATE Rezerwacje_uslugi
+    SET liczba_uczestnikow = liczba_uczestnikow - 1
+    WHERE id_rezerwacji = OLD.id_rezerwacji_uslugi;
+END;
+
+```
+
+- Opis: Trigger obliczający kwotę wpłat dla rezerwacji wycieczki po dodaniu nowej wpłaty.
+
+- kod DDL
+```sql
+CREATE TRIGGER oblicz_calosc_wplat_po_dodaniu
+AFTER INSERT ON Wplaty
+FOR EACH ROW
+BEGIN
+    UPDATE Rezerwacje_wycieczek
+    SET suma_wycieczki = suma_wycieczki + NEW.wplata
+    WHERE id_rezerwacji = NEW.id_rezerwacji;
+END;
+
+```
+
+- Opis: Trigger aktualizujący status rezerwacji wycieczki na podstawie liczby uczestników.
+
+
+- kod DDL
+```sql
+CREATE TRIGGER aktualizuj_status_po_dodaniu_uczestnika
+AFTER INSERT ON Uczestnicy
+FOR EACH ROW
+BEGIN
+    DECLARE total_participants INT;
+    SELECT liczba_uczestnikow INTO total_participants
+    FROM Rezerwacje_wycieczek
+    WHERE id_rezerwacji = NEW.id_rezerwacji;
+
+    IF total_participants >= (SELECT liczba_miejsc FROM Wycieczki WHERE id_wycieczki = (SELECT id_wycieczki FROM Rezerwacje_wycieczek WHERE id_rezerwacji = NEW.id_rezerwacji)) THEN
+        UPDATE Rezerwacje_wycieczek
+        SET id_statusu = (SELECT id_statusu FROM Statusy WHERE status = 'Full')
+        WHERE id_rezerwacji = NEW.id_rezerwacji;
+    END IF;
+END;
+
+```
+
+- Opis: Trigger dodający aktualną datę przy tworzeniu rezerwacji.
+
+- kod DDL
+```sql
+CREATE TRIGGER ustaw_date_rezerwacji
+BEFORE INSERT ON Rezerwacje_wycieczek
+FOR EACH ROW
+SET NEW.data_rozpoczecia_rezerw = IFNULL(NEW.data_rozpoczecia_rezerw, NOW());
+
+
+```
 
 
 # 4. Inne
