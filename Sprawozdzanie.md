@@ -30,14 +30,15 @@ Nazwa tabeli: Klienci
 
 | Nazwa atrybutu | Typ | Opis/Uwagi |
 | -------------- | --- | ---------- |
-| typ_klienta | varchar (50) | Może przyjmować dwie wartości: I - indywidualny, F - firma |
 | id_klienta   |  int   |    Klucz główny, niepowtarzalny, który się inkrementuje automatycznie        |
+| typ_klienta | varchar (50) | Może przyjmować dwie wartości: I - indywidualny, F - firma |
 | imie   |  varchar(255)   |     Imię klienta płacącego za wycieczkę       |
 |nazwisko|varchar(255)|Nazwisko klienta płacącego za wycieczkę |
 |adres|varchar(255)|Adres klienta płacącego za wycieczkę|
 | miasto | varchar (255) | Adres - miasto |
 | kraj | varchar (255) | Adres - kraj |
 |telefon|varchar(255)|Numer telefonu klienta płacącego za wycieczkę|
+|nazwa_firmy| varchar(255)| Nazwa firmy, jeśli osoba prytatna to pole zawiera napis "brak"|
 
 
 
@@ -53,6 +54,7 @@ CREATE TABLE Klienci (
     miasto varchar(255) NOT NULL,
     kraj varchar(255) NOT NULL,
     telefon varchar(255)  NOT NULL
+    nazwa_firmy varchar(255)  NOT NULL
 );
 ```
 
@@ -119,6 +121,7 @@ CREATE TABLE Wycieczki (
     miejsce_wyjazdu varchar(255) NOT NULL,
     liczba_miejsc int NOT NULL CHECK (liczba_miejsc > 0),
     cena decimal(10,2) NOT NULL CHECK (cena > 0),
+    data_rozpoczecia_rez datetime NOT NULL,
     FOREIGN KEY (id_miasta) REFERENCES Miasta(id_miasta)
 );
 ```
@@ -203,6 +206,8 @@ Nazwa tabeli: Rezerwacje_uslugi
 | id_rezerwacji   |  int  |    Klucz obcy, z tabeli Rezerwacje_wycieczek      |
 | id_uslugi | int | Klucz obcy, z tabeli Uslugi |
 | liczba_uczestnikow | int | Liczba uczestników |
+| data_rezerwacji | date | Data rezerwacji |
+| cena | decimal(2,10) | Cena usługi
 - kod DDL
 
 ```sql
@@ -211,6 +216,8 @@ CREATE TABLE Rezerwacje_uslugi (
     id_rezerwacji int  NOT NULL,
     id_uslugi int  NOT NULL,
     liczba_uczestnikow int  NOT NULL CHECK (liczba_uczestnikow > 0),
+    data_rezerwacji date NOT NULL,
+    cena decimal(10,2) NOT NULL CHECK (cena > 0),
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji),
 	FOREIGN KEY (id_uslugi) REFERENCES Uslugi(id_uslugi)
 );
@@ -261,10 +268,11 @@ Nazwa tabeli: Wpłaty
 
 | Nazwa atrybutu | Typ | Opis/Uwagi                                      |
 | -------------- | --- | ----------------------------------------------- |
+|id_wplaty | int | Klucz główny, który sie automatycznie inkrementuje | 
 |id_klienta | int | Klucz obcy do tabeli Klienci |
 |id_rezerwacji | int | Klucz obcy do tabeli Rezerwacje |
 |wplata | decimal (10,2) | Wpłacona kwota |
-|id_wplaty | int | Klucz główny, który sie automatycznie inkrementuje | 
+| data_wplaty | date | Data wpłaty |
 
 - kod DDL
 
@@ -274,6 +282,7 @@ CREATE TABLE Wplaty (
     id_klienta int NOT NULL,
     id_rezerwacji int NOT NULL,
     wplata decimal(10,2) NOT NULL CHECK (wplata > 0),
+    data_wplaty date NOT NULL,
     FOREIGN KEY (id_klienta) REFERENCES Klienci(id_klienta),
     FOREIGN KEY (id_rezerwacji) REFERENCES Rezerwacje_wycieczek(id_rezerwacji)
 );
