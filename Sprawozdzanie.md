@@ -21,7 +21,7 @@ Rolą administratora jest dodawanie do bazy wycieczek, możliwych dla nich usłu
 
 ## Schemat bazy danych
 
-![](schemat.png)
+![](images/schemat.png)
 
 ## Opis poszczególnych tabel
 
@@ -293,88 +293,57 @@ CREATE TABLE Wplaty (
 
 ## Widoki
 
-Nazwa widoku: Lista_uczestnikow_rezerwacji
-- Opis: Lista uczestników rezerwacji
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/26bae6c5-17c7-4237-a3c3-50643a79639e)
-
+Nazwa widoku: v_informacje_o_wycieczkach
+- Opis: Wyświetla wycieczki/usługi wraz z informacjami o dostępnych miejscach
+![](images/views_1.png)
 - kod DDL
 ```sql
-CREATE VIEW Lista_uczestnikow_rezerwacji
+CREATE VIEW v_informacje_o_wycieczkach
 AS
-SELECT Rezerwacje_uslugi.id_rezerwacji, Uczestnicy.imie, Uczestnicy.nazwisko
-FROM Rezerwacje_uslugi
-JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji;
-
+SELECT w.id_wycieczki, w.liczba_miejsc "Liczba miejsc na wycieczkę", u.id_uslugi, u.liczba_miejsc "Liczba miejsc na usługę"
+from Wycieczki w
+left join Uslugi u on w.id_wycieczki=u.id_wycieczki
 ```
-Nazwa widoku: Cala_wplata
-- Opis: Wplata dokonana przez klienta
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/c513d456-6022-4afb-a1b3-ed0bf7ad5f07)
 
+Nazwa widoku: v_rezerwacje_zamowienia
+- Opis: Wyświetla rezerwacje i ich całkowity koszt
+![](images/views_2.png)
 - kod DDL
 ```sql
-CREATE VIEW Cala_wplata
+CREATE VIEW v_rezerwacje_zamowienia
 AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, SUM(Wplaty.wplata) as CalaWplata
-FROM Klienci
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko;
-
+SELECT rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena * rw.liczba_uczestnikow as koszt_wycieczki, sum(ru.cena) koszt_uslug, w.cena * rw.liczba_uczestnikow + sum(ru.cena) as calkowity_koszt
+from Rezerwacje_wycieczek rw
+join Wycieczki w on rw.id_wycieczki=w.id_wycieczki
+join Rezerwacje_uslugi ru on ru.id_rezerwacji=rw.id_rezerwacji
+group by rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena
 ```
-Nazwa widoku: Liczba_uczestnikow_wycieczki
-- Opis: Liczba uczestnikow wycieczki
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/19e35501-9a3a-4afc-b632-99504997f308)
 
+Nazwa widoku: v_saldo_rezerwacji
+- Opis: Wyświetla informacje o sumie wpłat za daną rezerwację i kwocie do zapłaty lub nadpłacie
+![](images/views_3.png)
 - kod DDL
 ```sql
-CREATE VIEW Liczba_uczestnikow_wycieczki
+CREATE VIEW v_saldo_rezerwacji
 AS
-SELECT Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa, COUNT(Uczestnicy.id_uczestnika) as LiczbaUczestnikow
-FROM Rezerwacje_uslugi
-JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji
-JOIN Uslugi ON Rezerwacje_uslugi.id_uslugi = Uslugi.id_uslugi
-GROUP BY Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa;
-
+SELECT rw.id_rezerwacji, v.calkowity_koszt, sum(wplata) as wplata, sum(wplata) - v.calkowity_koszt saldo
+from Rezerwacje_wycieczek rw 
+join v_rezerwacje_zamowienia v on v.id_rezerwacji=rw.id_rezerwacji
+join wplaty w on w.id_rezerwacji=rw.id_rezerwacji
+group by rw.id_rezerwacji, v.calkowity_koszt
 ```
-Nazwa widoku: Wycieczka_i_lokalizacja
-- Opis: Lokalizacja wycieczek
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/6efe16a0-8a1f-4cbb-a28c-3dcd02b403b7)
 
+Nazwa widoku: v_wykaz_uczestnikow
+- Opis: Wyświetla wykaz uczestników poszczególnych wycieczek i atrakcji
+![](images/views_4.png)
 - kod DDL
 ```sql
-CREATE VIEW Wycieczka_i_lokalizacja
+CREATE VIEW v_wykaz_uczestnikow
 AS
-SELECT Wycieczki.id_wycieczki, Wycieczki.data_wyjazdu, Miasta.nazwa_miasta, Kraje.nazwa_kraju
-FROM Wycieczki
-JOIN Miasta ON Wycieczki.id_miasta = Miasta.id_miasta
-JOIN Kraje ON Miasta.id_kraju = Kraje.id_kraju;
-```
-Nazwa widoku: Info_klient
-- Opis: Podstawowe informacje o kliencie
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/979e8438-9f2c-4197-9514-962cca9eca7c)
-
-- kod DDL
-```sql
-CREATE VIEW Info_klient
-AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji, SUM(Wplaty.wplata) as WszystkieWplaty
-FROM Klienci
-JOIN Rezerwacje_uslugi ON Klienci.id_klienta = Rezerwacje_uslugi.id_rezerwacji
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji;
-
-```
-Nazwa widoku: Dostepne_uslugi_i_cena
-- Opis: Dostępne usługi i ich cena
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/c9f812ad-b25f-439f-92a5-435604690eaa)
-
-- kod DDL
-```sql
-CREATE VIEW Dostepne_uslugi_i_cena
-AS
-SELECT Uslugi.nazwa, Uslugi.cena, Uslugi.liczba_miejsc
-FROM Uslugi
-WHERE Uslugi.liczba_miejsc > 0;
-
+SELECT rw.id_rezerwacji, ru.id_rezerwacji_uslugi, id_uczestnika, imie, nazwisko
+from Rezerwacje_wycieczek rw 
+join Rezerwacje_uslugi ru on rw.id_rezerwacji=ru.id_rezerwacji
+join Uczestnicy u on u.id_rezerwacji=rw.id_rezerwacji
 ```
 
 ## Procedury/funkcje
@@ -480,8 +449,6 @@ where data_rozpoczecia_rez <= @data
 - Opis: Procedura dodająca rezerwacje. Wstawia nową rezerwację do tabeli Rezerwacje_wycieczek i zwraca ID utworzonej rezerwacji.
 - kod DDL
 ```sql
-DELIMITER //
-
 CREATE PROCEDURE AddReservation (
     IN p_id_wycieczki INT,
     IN p_id_klienta INT,
@@ -500,16 +467,12 @@ BEGIN
     
     -- Return the ID of the new reservation
     SELECT p_id_rezerwacji AS id_rezerwacji;
-END //
-
-DELIMITER ;
+END 
 ```
 
 - Opis: Procedura modyfikująca rezerwację. Aktualizuje szczegóły istniejącej rezerwacji w tabeli Rezerwacje_wycieczek na podstawie ID.
 - kod DDL
 ```sql
-DELIMITER //
-
 CREATE PROCEDURE ModifyReservation (
     IN p_id_rezerwacji INT,
     IN p_id_wycieczki INT,
@@ -528,16 +491,11 @@ BEGIN
         suma_wycieczki = p_suma_wycieczki
     WHERE id_rezerwacji = p_id_rezerwacji;
 END //
-
-DELIMITER ;
-
 ```
 
 - Opis: Procedura odwołująca rezerwację. Procedura usuwa wszystkie wpisy w tabelach Uczestnicy_uslugi, Uczestnicy, Rezerwacje_uslugi oraz Wplaty, zanim usunie rezerwację z tabeli Rezerwacje_wycieczek.
 - kod DDL
 ```sql
-DELIMITER //
-
 CREATE PROCEDURE CancelReservation (
     IN p_id_rezerwacji INT
 )
@@ -562,9 +520,6 @@ BEGIN
     DELETE FROM Rezerwacje_wycieczek
     WHERE id_rezerwacji = p_id_rezerwacji;
 END //
-
-DELIMITER ;
-
 ```
 
 
