@@ -348,68 +348,6 @@ join Uczestnicy u on u.id_rezerwacji=rw.id_rezerwacji
 
 ## Procedury/funkcje
 
-- Opis: Procedura wyświetlająca listę uczestników danej rezerwacji
-- kod DDL
-```sql
-create or alter proc lista_uczestnikow_danej_rezerwacji  
-@id_rezerwacji int  
-as  
-begin  
-if not exists (select * from Rezerwacje_wycieczek where id_rezerwacji = @id_rezerwacji)  
-throw 50001, 'Brak rezerwacji o takim id', 1;  
-end;
-select *  
-from Lista_uczestnikow_rezerwacji 
-where id_rezerwacji = @id_rezerwacji; 
-```
-
-- Opis: Procedura wyświetlająca listę wszystkich wplat danego klienta
-- kod DDL
-```sql
-create or alter proc wplaty_danego_klienta
-@id_klienta int  
-as  
-begin  
-if not exists (select * from Klienci where id_klienta = @id_klienta)  
-throw 50001, 'Brak klienta o takim id', 1;  
-end;
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, wplaty.wplata
-FROM Klienci
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-where id_klienta = @id_klienta; 
-```
-
-- Opis: Procedura wyświetlająca liczbę uczestników danej usługi
-- kod DDL
-```sql
-create or alter proc liczba_uczestnikow_danej_uslugi
-@id_uslugi int  
-as  
-begin  
-    if not exists (select * from uslugi where id_uslugi = @id_uslugi)  
-        throw 50001, 'Brak wycieczki o takim id', 1;  
-    SELECT id_uslugi, sum(liczba_uczestnikow)
-    FROM Rezerwacje_uslugi
-    where id_uslugi = @id_uslugi
-    group by id_uslugi
-end;
-```
-
-- Opis: Procedura wyświetlająca informacje o danym kliencie
-- kod DDL
-```sql
-create or alter proc informacje_o_danym_kliencie
-@id_klienta int  
-as  
-begin  
-    if not exists (select * from klienci where id_klienta = @id_klienta)  
-        throw 50001, 'Brak klienta o takim id', 1;  
-    SELECT *
-    FROM Info_klient
-    where id_klienta = @id_klienta
-end;
-```
-
 - Opis: Funkcja wyświetlacjąca wpłaty w danym miesiącu
 - kod DDL
 ```sql
@@ -446,83 +384,74 @@ where data_rozpoczecia_rez <= @data
 );
 ```
 
-- Opis: Procedura dodająca rezerwacje. Wstawia nową rezerwację do tabeli Rezerwacje_wycieczek i zwraca ID utworzonej rezerwacji.
+- Opis: Procedura dodająca rezerwacje. Wstawia nową rezerwację do tabeli Rezerwacje_wycieczek i zwraca ID utworzonej rezerwacji. Data rezerwacji jest domyślnie ustawiona jako obecna data.
 - kod DDL
 ```sql
-CREATE PROCEDURE AddReservation (
-    IN p_id_wycieczki INT,
-    IN p_id_klienta INT,
-    IN p_id_statusu INT,
-    IN p_liczba_uczestnikow INT,
-    IN p_suma_wycieczki DECIMAL(10,2)
-)
+CREATE OR ALTER PROCEDURE AddReservation
+    @p_id_wycieczki INT,
+    @p_id_klienta INT,
+    @p_id_statusu INT,
+    @p_liczba_uczestnikow INT,
+    @p_data_rezerwacji DATE = NULL
+AS
 BEGIN
-    DECLARE p_id_rezerwacji INT;
-    
-    -- Insert into Rezerwacje_wycieczek
-    INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, suma_wycieczki)
-    VALUES (p_id_wycieczki, p_id_klienta, p_id_statusu, p_liczba_uczestnikow, p_suma_wycieczki);
-    
-    SET p_id_rezerwacji = LAST_INSERT_ID();
-    
-    -- Return the ID of the new reservation
-    SELECT p_id_rezerwacji AS id_rezerwacji;
-END 
+    DECLARE @p_id_rezerwacji INT;
+    IF @p_data_rezerwacji IS NULL
+    BEGIN
+        SET @p_data_rezerwacji = CONVERT(DATE, GETDATE());
+    END
+    INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, data_rezerwacji)
+    VALUES (@p_id_wycieczki, @p_id_klienta, @p_id_statusu, @p_liczba_uczestnikow, @p_data_rezerwacji);    
+    SET @p_id_rezerwacji = SCOPE_IDENTITY();
+    SELECT @p_id_rezerwacji AS id_rezerwacji;
+END;
 ```
 
-- Opis: Procedura modyfikująca rezerwację. Aktualizuje szczegóły istniejącej rezerwacji w tabeli Rezerwacje_wycieczek na podstawie ID.
+- Opis: Procedura dodająca uczestnika do rezerwacji wycieczki. Sprawdza też, czy nie dodano za dużo uczestników.
 - kod DDL
 ```sql
-CREATE PROCEDURE ModifyReservation (
-    IN p_id_rezerwacji INT,
-    IN p_id_wycieczki INT,
-    IN p_id_klienta INT,
-    IN p_id_statusu INT,
-    IN p_liczba_uczestnikow INT,
-    IN p_suma_wycieczki DECIMAL(10,2)
-)
+CREATE OR ALTER PROCEDURE AddParticipant
+    @p_id_rezerwacji INT,
+    @p_imie varchar(255),
+    @p_nazwisko varchar(255),
+    @p_telefon INT
+AS
 BEGIN
-    -- Update Rezerwacje_wycieczek
-    UPDATE Rezerwacje_wycieczek
-    SET id_wycieczki = p_id_wycieczki,
-        id_klienta = p_id_klienta,
-        id_statusu = p_id_statusu,
-        liczba_uczestnikow = p_liczba_uczestnikow,
-        suma_wycieczki = p_suma_wycieczki
-    WHERE id_rezerwacji = p_id_rezerwacji;
-END //
+    DECLARE @p_id_uczestnika INT;
+    IF (select count(*) from Uczestnicy where id_rezerwacji = @p_id_rezerwacji) < (select Liczba_uczestnikow from Rezerwacje_wycieczek where id_rezerwacji = @p_id_rezerwacji)
+    BEGIN
+        INSERT INTO Uczestnicy (id_rezerwacji, imie, nazwisko, telefon)
+        VALUES (@p_id_rezerwacji, @p_imie, @p_nazwisko, @p_telefon);    
+        SET @p_id_uczestnika = SCOPE_IDENTITY();
+        SELECT @p_id_uczestnika AS id_uczestnika;
+    END;
+     ELSE
+    BEGIN
+        SELECT 'Nie można dodać kolejnego uczestnika do tej rezerwacji' AS Message;
+    END
+END;
 ```
 
-- Opis: Procedura odwołująca rezerwację. Procedura usuwa wszystkie wpisy w tabelach Uczestnicy_uslugi, Uczestnicy, Rezerwacje_uslugi oraz Wplaty, zanim usunie rezerwację z tabeli Rezerwacje_wycieczek.
+- Opis: Procedura anulująca rezerwację. 
 - kod DDL
 ```sql
-CREATE PROCEDURE CancelReservation (
-    IN p_id_rezerwacji INT
-)
+CREATE OR ALTER PROCEDURE CancelReservation
+    @p_id_rezerwacji INT
+AS
 BEGIN
-    -- Delete from Uczestnicy_uslugi
-    DELETE FROM Uczestnicy_uslugi
-    WHERE id_rezerwacji_uslugi IN (SELECT id_rezerwacji_uslugi FROM Rezerwacje_uslugi WHERE id_rezerwacji = p_id_rezerwacji);
-    
-    -- Delete from Uczestnicy
-    DELETE FROM Uczestnicy
-    WHERE id_rezerwacji = p_id_rezerwacji;
-    
-    -- Delete from Rezerwacje_uslugi
-    DELETE FROM Rezerwacje_uslugi
-    WHERE id_rezerwacji = p_id_rezerwacji;
-    
-    -- Delete from Wplaty
-    DELETE FROM Wplaty
-    WHERE id_rezerwacji = p_id_rezerwacji;
-    
-    -- Delete from Rezerwacje_wycieczek
-    DELETE FROM Rezerwacje_wycieczek
-    WHERE id_rezerwacji = p_id_rezerwacji;
-END //
+    IF EXISTS (SELECT 1 FROM Rezerwacje_wycieczek WHERE id_rezerwacji = @p_id_rezerwacji)
+    BEGIN
+        UPDATE Rezerwacje_wycieczek
+        SET id_statusu = 0
+        WHERE id_rezerwacji = @p_id_rezerwacji;
+        SELECT 'Reservation canceled successfully.' AS Message;
+    END
+    ELSE
+    BEGIN
+        SELECT 'Reservation not found.' AS Message;
+    END
+END;
 ```
-
-
 
 ## Triggery
 
