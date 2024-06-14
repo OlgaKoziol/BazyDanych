@@ -348,17 +348,30 @@ join Uczestnicy u on u.id_rezerwacji=rw.id_rezerwacji
 
 ## Procedury/funkcje
 
-- Opis: Funkcja wyświetlacjąca wpłaty w danym miesiącu
+- Opis: Funkcja wyświetlacjąca wpłaty w danym zakresie czasu
 - kod DDL
 ```sql
-create function f_wplaty_w_danym_miesiacu (@month int)  
+create function f_wplaty_w_danym_czasie (@date_1 date, @date_2 date)  
 returns table  
 as return (  
 select *  
 from wplaty  
-where month(data_wplaty) = @month 
+where data_wplaty > @date_1 and data_wplaty < @date_2
 );
 ```
+
+- Opis: Funkcja wyświetlacjąca wycieczki, które można rezerwować w danym dniu. Bierze pod uwagę także liczbę dostępnych miejsc 
+- kod DDL
+```sql
+create or alter function f_aktywne_wycieczki (@data date)
+returns table  
+as return (  
+select *
+from wycieczki 
+where data_rozpoczecia_rez <= @data and liczba_miejsc > 0
+);
+```
+
 - Opis: Funkcja wyświetlacjąca wycieczki zarezerwowane w danym miesiącu
 - kod DDL
 ```sql
@@ -368,19 +381,6 @@ as return (
 select *
 from Rezerwacje_wycieczek  
 where month(data_rezerwacji) = @month 
-);
-```
-
-
-- Opis: Funkcja wyświetlacjąca wycieczki, które można rezerwować w danym dniu
-- kod DDL
-```sql
-create function f_aktywne_wycieczki (@data date)
-returns table  
-as return (  
-select *
-from wycieczki 
-where data_rozpoczecia_rez <= @data
 );
 ```
 
@@ -488,8 +488,6 @@ BEGIN
     END
 END;
 ```
-
-
 
 # 4. Inne
 
