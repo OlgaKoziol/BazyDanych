@@ -491,4 +491,8 @@ END;
 
 # 4. Inne
 
-(informacja o sposobie wygenerowania danych, uprawnienia …)
+Uprawnienia:
+
+exec sp_addrolemember 'dbcreator', username ; - Może tworzyć i zmieniać ustawienia baz danych
+exec sp_addrolemember 'db_owner', username ; - Może przeprowadzić każde działanie na bazie danych
+exec sp_addrolemember 'db_denydatareader', username ; - NIE może czytać z żadnej tabeli.
