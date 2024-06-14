@@ -390,7 +390,6 @@ where data_rozpoczecia_rez <= @data
 CREATE OR ALTER PROCEDURE AddReservation
     @p_id_wycieczki INT,
     @p_id_klienta INT,
-    @p_id_statusu INT,
     @p_liczba_uczestnikow INT,
     @p_data_rezerwacji DATE = NULL
 AS
@@ -401,7 +400,7 @@ BEGIN
         SET @p_data_rezerwacji = CONVERT(DATE, GETDATE());
     END
     INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, data_rezerwacji)
-    VALUES (@p_id_wycieczki, @p_id_klienta, @p_id_statusu, @p_liczba_uczestnikow, @p_data_rezerwacji);    
+    VALUES (@p_id_wycieczki, @p_id_klienta, 1, @p_liczba_uczestnikow, @p_data_rezerwacji);    
     SET @p_id_rezerwacji = SCOPE_IDENTITY();
     SELECT @p_id_rezerwacji AS id_rezerwacji;
 END;
@@ -425,7 +424,7 @@ BEGIN
         SET @p_id_uczestnika = SCOPE_IDENTITY();
         SELECT @p_id_uczestnika AS id_uczestnika;
     END;
-     ELSE
+    ELSE
     BEGIN
         SELECT 'Nie można dodać kolejnego uczestnika do tej rezerwacji' AS Message;
     END
@@ -455,83 +454,41 @@ END;
 
 ## Triggery
 
-- Opis: Trigger aktualizujący liczbę uczestników w rezerwacji usługi po dodaniu nowego uczestnika.
+- Opis: Trigger aktualizujący liczbę dostępnych miejsc na wycieczkę po dodaniu rezerwacji
 - kod DDL
 ```sql
-CREATE TRIGGER update_participant_count_after_insert
-AFTER INSERT ON Uczestnicy_uslugi
-FOR EACH ROW
+CREATE TRIGGER t_update_available_places
+ON Rezerwacje_wycieczek
+AFTER INSERT
+AS
 BEGIN
-    UPDATE Rezerwacje_uslugi
-    SET liczba_uczestnikow = liczba_uczestnikow + 1
-    WHERE id_rezerwacji = NEW.id_rezerwacji_uslugi;
+    UPDATE Wycieczki
+    SET liczba_miejsc = liczba_miejsc - i.Liczba_uczestnikow
+    FROM Wycieczki w
+    JOIN INSERTED i ON w.id_wycieczki = i.id_wycieczki;
 END;
-
 ```
 
-- Opis: Trigger aktualizujący liczbę uczestników w rezerwacji usługi po usunięciu uczestnika:
+- Opis: Trigger aktualizujący liczbę dostępnych miejsc na wycieczkę po anulowaniu rezerwacji
 - kod DDL
 ```sql
-CREATE TRIGGER aktualizuj_liczbe_uczestnikow_po_usunieciu
-AFTER DELETE ON Uczestnicy_uslugi
-FOR EACH ROW
+CREATE TRIGGER t_update_available_places_2
+ON Rezerwacje_wycieczek
+AFTER UPDATE
+AS
 BEGIN
-    UPDATE Rezerwacje_uslugi
-    SET liczba_uczestnikow = liczba_uczestnikow - 1
-    WHERE id_rezerwacji = OLD.id_rezerwacji_uslugi;
+    IF UPDATE(id_statusu)
+    BEGIN
+        UPDATE Wycieczki
+        SET liczba_miejsc = liczba_miejsc + d.Liczba_uczestnikow
+        FROM Wycieczki w
+        JOIN DELETED d ON w.id_wycieczki = d.id_wycieczki
+        JOIN INSERTED i ON d.id_rezerwacji = i.id_rezerwacji
+        WHERE i.id_statusu = 0 AND d.id_statusu <> 0;
+    END
 END;
-
 ```
 
-- Opis: Trigger obliczający kwotę wpłat dla rezerwacji wycieczki po dodaniu nowej wpłaty.
-
-- kod DDL
-```sql
-CREATE TRIGGER oblicz_calosc_wplat_po_dodaniu
-AFTER INSERT ON Wplaty
-FOR EACH ROW
-BEGIN
-    UPDATE Rezerwacje_wycieczek
-    SET suma_wycieczki = suma_wycieczki + NEW.wplata
-    WHERE id_rezerwacji = NEW.id_rezerwacji;
-END;
-
-```
-
-- Opis: Trigger aktualizujący status rezerwacji wycieczki na podstawie liczby uczestników.
-
-
-- kod DDL
-```sql
-CREATE TRIGGER aktualizuj_status_po_dodaniu_uczestnika
-AFTER INSERT ON Uczestnicy
-FOR EACH ROW
-BEGIN
-    DECLARE total_participants INT;
-    SELECT liczba_uczestnikow INTO total_participants
-    FROM Rezerwacje_wycieczek
-    WHERE id_rezerwacji = NEW.id_rezerwacji;
-
-    IF total_participants >= (SELECT liczba_miejsc FROM Wycieczki WHERE id_wycieczki = (SELECT id_wycieczki FROM Rezerwacje_wycieczek WHERE id_rezerwacji = NEW.id_rezerwacji)) THEN
-        UPDATE Rezerwacje_wycieczek
-        SET id_statusu = (SELECT id_statusu FROM Statusy WHERE status = 'Full')
-        WHERE id_rezerwacji = NEW.id_rezerwacji;
-    END IF;
-END;
-
-```
-
-- Opis: Trigger dodający aktualną datę przy tworzeniu rezerwacji.
-
-- kod DDL
-```sql
-CREATE TRIGGER ustaw_date_rezerwacji
-BEFORE INSERT ON Rezerwacje_wycieczek
-FOR EACH ROW
-SET NEW.data_rozpoczecia_rezerw = IFNULL(NEW.data_rozpoczecia_rezerw, NOW());
-
-
-```
 
 
 # 4. Inne
