@@ -300,9 +300,9 @@ Nazwa widoku: v_informacje_o_wycieczkach
 ```sql
 CREATE VIEW v_informacje_o_wycieczkach
 AS
-SELECT w.id_wycieczki, w.liczba_miejsc "Liczba miejsc na wycieczkę", u.id_uslugi, u.liczba_miejsc "Liczba miejsc na usługę"
-from Wycieczki w
-left join Uslugi u on w.id_wycieczki=u.id_wycieczki
+    SELECT w.id_wycieczki, w.liczba_miejsc "Liczba miejsc na wycieczkę", u.id_uslugi, u.liczba_miejsc "Liczba miejsc na usługę"
+    from Wycieczki w
+        left join Uslugi u on w.id_wycieczki=u.id_wycieczki
 ```
 
 Nazwa widoku: v_rezerwacje_zamowienia
@@ -312,11 +312,11 @@ Nazwa widoku: v_rezerwacje_zamowienia
 ```sql
 CREATE VIEW v_rezerwacje_zamowienia
 AS
-SELECT rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena * rw.liczba_uczestnikow as koszt_wycieczki, sum(ru.cena) koszt_uslug, w.cena * rw.liczba_uczestnikow + sum(ru.cena) as calkowity_koszt
-from Rezerwacje_wycieczek rw
-join Wycieczki w on rw.id_wycieczki=w.id_wycieczki
-join Rezerwacje_uslugi ru on ru.id_rezerwacji=rw.id_rezerwacji
-group by rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena
+    SELECT rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena * rw.liczba_uczestnikow as koszt_wycieczki, sum(ru.cena) koszt_uslug, w.cena * rw.liczba_uczestnikow + sum(ru.cena) as calkowity_koszt
+    from Rezerwacje_wycieczek rw
+        join Wycieczki w on rw.id_wycieczki=w.id_wycieczki
+        join Rezerwacje_uslugi ru on ru.id_rezerwacji=rw.id_rezerwacji
+    group by rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena
 ```
 
 Nazwa widoku: v_saldo_rezerwacji
@@ -326,11 +326,11 @@ Nazwa widoku: v_saldo_rezerwacji
 ```sql
 CREATE VIEW v_saldo_rezerwacji
 AS
-SELECT rw.id_rezerwacji, v.calkowity_koszt, sum(wplata) as wplata, sum(wplata) - v.calkowity_koszt saldo
-from Rezerwacje_wycieczek rw 
-join v_rezerwacje_zamowienia v on v.id_rezerwacji=rw.id_rezerwacji
-join wplaty w on w.id_rezerwacji=rw.id_rezerwacji
-group by rw.id_rezerwacji, v.calkowity_koszt
+    SELECT rw.id_rezerwacji, v.calkowity_koszt, sum(wplata) as wplata, sum(wplata) - v.calkowity_koszt saldo
+    from Rezerwacje_wycieczek rw
+        join v_rezerwacje_zamowienia v on v.id_rezerwacji=rw.id_rezerwacji
+        join wplaty w on w.id_rezerwacji=rw.id_rezerwacji
+    group by rw.id_rezerwacji, v.calkowity_koszt
 ```
 
 Nazwa widoku: v_wykaz_uczestnikow
@@ -340,10 +340,10 @@ Nazwa widoku: v_wykaz_uczestnikow
 ```sql
 CREATE VIEW v_wykaz_uczestnikow
 AS
-SELECT rw.id_rezerwacji, ru.id_rezerwacji_uslugi, id_uczestnika, imie, nazwisko
-from Rezerwacje_wycieczek rw 
-join Rezerwacje_uslugi ru on rw.id_rezerwacji=ru.id_rezerwacji
-join Uczestnicy u on u.id_rezerwacji=rw.id_rezerwacji
+    SELECT rw.id_rezerwacji, ru.id_rezerwacji_uslugi, id_uczestnika, imie, nazwisko
+    from Rezerwacje_wycieczek rw
+        join Rezerwacje_uslugi ru on rw.id_rezerwacji=ru.id_rezerwacji
+        join Uczestnicy u on u.id_rezerwacji=rw.id_rezerwacji
 ```
 
 ## Procedury/funkcje
@@ -367,7 +367,7 @@ create or alter function f_aktywne_wycieczki (@data date)
 returns table  
 as return (  
 select *
-from wycieczki 
+from wycieczki
 where data_rozpoczecia_rez <= @data and liczba_miejsc > 0
 );
 ```
@@ -399,8 +399,10 @@ BEGIN
     BEGIN
         SET @p_data_rezerwacji = CONVERT(DATE, GETDATE());
     END
-    INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, data_rezerwacji)
-    VALUES (@p_id_wycieczki, @p_id_klienta, 1, @p_liczba_uczestnikow, @p_data_rezerwacji);    
+    INSERT INTO Rezerwacje_wycieczek
+        (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, data_rezerwacji)
+    VALUES
+        (@p_id_wycieczki, @p_id_klienta, 1, @p_liczba_uczestnikow, @p_data_rezerwacji);
     SET @p_id_rezerwacji = SCOPE_IDENTITY();
     SELECT @p_id_rezerwacji AS id_rezerwacji;
 END;
@@ -417,10 +419,16 @@ CREATE OR ALTER PROCEDURE AddParticipant
 AS
 BEGIN
     DECLARE @p_id_uczestnika INT;
-    IF (select count(*) from Uczestnicy where id_rezerwacji = @p_id_rezerwacji) < (select Liczba_uczestnikow from Rezerwacje_wycieczek where id_rezerwacji = @p_id_rezerwacji)
+    IF (select count(*)
+    from Uczestnicy
+    where id_rezerwacji = @p_id_rezerwacji) < (select Liczba_uczestnikow
+    from Rezerwacje_wycieczek
+    where id_rezerwacji = @p_id_rezerwacji)
     BEGIN
-        INSERT INTO Uczestnicy (id_rezerwacji, imie, nazwisko, telefon)
-        VALUES (@p_id_rezerwacji, @p_imie, @p_nazwisko, @p_telefon);    
+        INSERT INTO Uczestnicy
+            (id_rezerwacji, imie, nazwisko, telefon)
+        VALUES
+            (@p_id_rezerwacji, @p_imie, @p_nazwisko, @p_telefon);
         SET @p_id_uczestnika = SCOPE_IDENTITY();
         SELECT @p_id_uczestnika AS id_uczestnika;
     END;
@@ -438,7 +446,9 @@ CREATE OR ALTER PROCEDURE CancelReservation
     @p_id_rezerwacji INT
 AS
 BEGIN
-    IF EXISTS (SELECT 1 FROM Rezerwacje_wycieczek WHERE id_rezerwacji = @p_id_rezerwacji)
+    IF EXISTS (SELECT 1
+    FROM Rezerwacje_wycieczek
+    WHERE id_rezerwacji = @p_id_rezerwacji)
     BEGIN
         UPDATE Rezerwacje_wycieczek
         SET id_statusu = 0
@@ -465,7 +475,7 @@ BEGIN
     UPDATE Wycieczki
     SET liczba_miejsc = liczba_miejsc - i.Liczba_uczestnikow
     FROM Wycieczki w
-    JOIN INSERTED i ON w.id_wycieczki = i.id_wycieczki;
+        JOIN INSERTED i ON w.id_wycieczki = i.id_wycieczki;
 END;
 ```
 
@@ -482,8 +492,8 @@ BEGIN
         UPDATE Wycieczki
         SET liczba_miejsc = liczba_miejsc + d.Liczba_uczestnikow
         FROM Wycieczki w
-        JOIN DELETED d ON w.id_wycieczki = d.id_wycieczki
-        JOIN INSERTED i ON d.id_rezerwacji = i.id_rezerwacji
+            JOIN DELETED d ON w.id_wycieczki = d.id_wycieczki
+            JOIN INSERTED i ON d.id_rezerwacji = i.id_rezerwacji
         WHERE i.id_statusu = 0 AND d.id_statusu <> 0;
     END
 END;
