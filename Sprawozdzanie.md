@@ -21,7 +21,7 @@ Rolą administratora jest dodawanie do bazy wycieczek, możliwych dla nich usłu
 
 ## Schemat bazy danych
 
-![](schemat.png)
+![](images/schemat.png)
 
 ## Opis poszczególnych tabel
 
@@ -293,165 +293,85 @@ CREATE TABLE Wplaty (
 
 ## Widoki
 
-Nazwa widoku: Lista_uczestnikow_rezerwacji
-- Opis: Lista uczestników rezerwacji
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/26bae6c5-17c7-4237-a3c3-50643a79639e)
-
+Nazwa widoku: v_informacje_o_wycieczkach
+- Opis: Wyświetla wycieczki/usługi wraz z informacjami o dostępnych miejscach
+![](images/views_1.png)
 - kod DDL
 ```sql
-CREATE VIEW Lista_uczestnikow_rezerwacji
+CREATE VIEW v_informacje_o_wycieczkach
 AS
-SELECT Rezerwacje_uslugi.id_rezerwacji, Uczestnicy.imie, Uczestnicy.nazwisko
-FROM Rezerwacje_uslugi
-JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji;
-
+SELECT w.id_wycieczki, w.liczba_miejsc "Liczba miejsc na wycieczkę", u.id_uslugi, u.liczba_miejsc "Liczba miejsc na usługę"
+from Wycieczki w
+left join Uslugi u on w.id_wycieczki=u.id_wycieczki
 ```
-Nazwa widoku: Cala_wplata
-- Opis: Wplata dokonana przez klienta
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/c513d456-6022-4afb-a1b3-ed0bf7ad5f07)
 
+Nazwa widoku: v_rezerwacje_zamowienia
+- Opis: Wyświetla rezerwacje i ich całkowity koszt
+![](images/views_2.png)
 - kod DDL
 ```sql
-CREATE VIEW Cala_wplata
+CREATE VIEW v_rezerwacje_zamowienia
 AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, SUM(Wplaty.wplata) as CalaWplata
-FROM Klienci
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko;
-
+SELECT rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena * rw.liczba_uczestnikow as koszt_wycieczki, sum(ru.cena) koszt_uslug, w.cena * rw.liczba_uczestnikow + sum(ru.cena) as calkowity_koszt
+from Rezerwacje_wycieczek rw
+join Wycieczki w on rw.id_wycieczki=w.id_wycieczki
+join Rezerwacje_uslugi ru on ru.id_rezerwacji=rw.id_rezerwacji
+group by rw.id_rezerwacji, rw.liczba_uczestnikow, w.cena
 ```
-Nazwa widoku: Liczba_uczestnikow_wycieczki
-- Opis: Liczba uczestnikow wycieczki
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/19e35501-9a3a-4afc-b632-99504997f308)
 
+Nazwa widoku: v_saldo_rezerwacji
+- Opis: Wyświetla informacje o sumie wpłat za daną rezerwację i kwocie do zapłaty lub nadpłacie
+![](images/views_3.png)
 - kod DDL
 ```sql
-CREATE VIEW Liczba_uczestnikow_wycieczki
+CREATE VIEW v_saldo_rezerwacji
 AS
-SELECT Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa, COUNT(Uczestnicy.id_uczestnika) as LiczbaUczestnikow
-FROM Rezerwacje_uslugi
-JOIN Uczestnicy ON Rezerwacje_uslugi.id_rezerwacji = Uczestnicy.id_rezerwacji
-JOIN Uslugi ON Rezerwacje_uslugi.id_uslugi = Uslugi.id_uslugi
-GROUP BY Rezerwacje_uslugi.id_rezerwacji, Uslugi.nazwa;
-
+SELECT rw.id_rezerwacji, v.calkowity_koszt, sum(wplata) as wplata, sum(wplata) - v.calkowity_koszt saldo
+from Rezerwacje_wycieczek rw 
+join v_rezerwacje_zamowienia v on v.id_rezerwacji=rw.id_rezerwacji
+join wplaty w on w.id_rezerwacji=rw.id_rezerwacji
+group by rw.id_rezerwacji, v.calkowity_koszt
 ```
-Nazwa widoku: Wycieczka_i_lokalizacja
-- Opis: Lokalizacja wycieczek
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/6efe16a0-8a1f-4cbb-a28c-3dcd02b403b7)
 
+Nazwa widoku: v_wykaz_uczestnikow
+- Opis: Wyświetla wykaz uczestników poszczególnych wycieczek i atrakcji
+![](images/views_4.png)
 - kod DDL
 ```sql
-CREATE VIEW Wycieczka_i_lokalizacja
+CREATE VIEW v_wykaz_uczestnikow
 AS
-SELECT Wycieczki.id_wycieczki, Wycieczki.data_wyjazdu, Miasta.nazwa_miasta, Kraje.nazwa_kraju
-FROM Wycieczki
-JOIN Miasta ON Wycieczki.id_miasta = Miasta.id_miasta
-JOIN Kraje ON Miasta.id_kraju = Kraje.id_kraju;
-```
-Nazwa widoku: Info_klient
-- Opis: Podstawowe informacje o kliencie
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/979e8438-9f2c-4197-9514-962cca9eca7c)
-
-- kod DDL
-```sql
-CREATE VIEW Info_klient
-AS
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji, SUM(Wplaty.wplata) as WszystkieWplaty
-FROM Klienci
-JOIN Rezerwacje_uslugi ON Klienci.id_klienta = Rezerwacje_uslugi.id_rezerwacji
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-GROUP BY Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, Rezerwacje_uslugi.id_rezerwacji;
-
-```
-Nazwa widoku: Dostepne_uslugi_i_cena
-- Opis: Dostępne usługi i ich cena
-- ![image](https://github.com/OlgaKoziol/BazyDanych/assets/92812510/c9f812ad-b25f-439f-92a5-435604690eaa)
-
-- kod DDL
-```sql
-CREATE VIEW Dostepne_uslugi_i_cena
-AS
-SELECT Uslugi.nazwa, Uslugi.cena, Uslugi.liczba_miejsc
-FROM Uslugi
-WHERE Uslugi.liczba_miejsc > 0;
-
+SELECT rw.id_rezerwacji, ru.id_rezerwacji_uslugi, id_uczestnika, imie, nazwisko
+from Rezerwacje_wycieczek rw 
+join Rezerwacje_uslugi ru on rw.id_rezerwacji=ru.id_rezerwacji
+join Uczestnicy u on u.id_rezerwacji=rw.id_rezerwacji
 ```
 
 ## Procedury/funkcje
 
-- Opis: Procedura wyświetlająca listę uczestników danej rezerwacji
+- Opis: Funkcja wyświetlacjąca wpłaty w danym zakresie czasu
 - kod DDL
 ```sql
-create or alter proc lista_uczestnikow_danej_rezerwacji  
-@id_rezerwacji int  
-as  
-begin  
-if not exists (select * from Rezerwacje_wycieczek where id_rezerwacji = @id_rezerwacji)  
-throw 50001, 'Brak rezerwacji o takim id', 1;  
-end;
-select *  
-from Lista_uczestnikow_rezerwacji 
-where id_rezerwacji = @id_rezerwacji; 
-```
-
-- Opis: Procedura wyświetlająca listę wszystkich wplat danego klienta
-- kod DDL
-```sql
-create or alter proc wplaty_danego_klienta
-@id_klienta int  
-as  
-begin  
-if not exists (select * from Klienci where id_klienta = @id_klienta)  
-throw 50001, 'Brak klienta o takim id', 1;  
-end;
-SELECT Klienci.id_klienta, Klienci.imie, Klienci.nazwisko, wplaty.wplata
-FROM Klienci
-JOIN Wplaty ON Klienci.id_klienta = Wplaty.id_klienta
-where id_klienta = @id_klienta; 
-```
-
-- Opis: Procedura wyświetlająca liczbę uczestników danej usługi
-- kod DDL
-```sql
-create or alter proc liczba_uczestnikow_danej_uslugi
-@id_uslugi int  
-as  
-begin  
-    if not exists (select * from uslugi where id_uslugi = @id_uslugi)  
-        throw 50001, 'Brak wycieczki o takim id', 1;  
-    SELECT id_uslugi, sum(liczba_uczestnikow)
-    FROM Rezerwacje_uslugi
-    where id_uslugi = @id_uslugi
-    group by id_uslugi
-end;
-```
-
-- Opis: Procedura wyświetlająca informacje o danym kliencie
-- kod DDL
-```sql
-create or alter proc informacje_o_danym_kliencie
-@id_klienta int  
-as  
-begin  
-    if not exists (select * from klienci where id_klienta = @id_klienta)  
-        throw 50001, 'Brak klienta o takim id', 1;  
-    SELECT *
-    FROM Info_klient
-    where id_klienta = @id_klienta
-end;
-```
-
-- Opis: Funkcja wyświetlacjąca wpłaty w danym miesiącu
-- kod DDL
-```sql
-create function f_wplaty_w_danym_miesiacu (@month int)  
+create function f_wplaty_w_danym_czasie (@date_1 date, @date_2 date)  
 returns table  
 as return (  
 select *  
 from wplaty  
-where month(data_wplaty) = @month 
+where data_wplaty > @date_1 and data_wplaty < @date_2
 );
 ```
+
+- Opis: Funkcja wyświetlacjąca wycieczki, które można rezerwować w danym dniu. Bierze pod uwagę także liczbę dostępnych miejsc 
+- kod DDL
+```sql
+create or alter function f_aktywne_wycieczki (@data date)
+returns table  
+as return (  
+select *
+from wycieczki 
+where data_rozpoczecia_rez <= @data and liczba_miejsc > 0
+);
+```
+
 - Opis: Funkcja wyświetlacjąca wycieczki zarezerwowane w danym miesiącu
 - kod DDL
 ```sql
@@ -464,192 +384,115 @@ where month(data_rezerwacji) = @month
 );
 ```
 
-
-- Opis: Funkcja wyświetlacjąca wycieczki, które można rezerwować w danym dniu
+- Opis: Procedura dodająca rezerwacje. Wstawia nową rezerwację do tabeli Rezerwacje_wycieczek i zwraca ID utworzonej rezerwacji. Data rezerwacji jest domyślnie ustawiona jako obecna data.
 - kod DDL
 ```sql
-create function f_aktywne_wycieczki (@data date)
-returns table  
-as return (  
-select *
-from wycieczki 
-where data_rozpoczecia_rez <= @data
-);
-```
-
-- Opis: Procedura dodająca rezerwacje. Wstawia nową rezerwację do tabeli Rezerwacje_wycieczek i zwraca ID utworzonej rezerwacji.
-- kod DDL
-```sql
-DELIMITER //
-
-CREATE PROCEDURE AddReservation (
-    IN p_id_wycieczki INT,
-    IN p_id_klienta INT,
-    IN p_id_statusu INT,
-    IN p_liczba_uczestnikow INT,
-    IN p_suma_wycieczki DECIMAL(10,2)
-)
+CREATE OR ALTER PROCEDURE AddReservation
+    @p_id_wycieczki INT,
+    @p_id_klienta INT,
+    @p_liczba_uczestnikow INT,
+    @p_data_rezerwacji DATE = NULL
+AS
 BEGIN
-    DECLARE p_id_rezerwacji INT;
-    
-    -- Insert into Rezerwacje_wycieczek
-    INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, suma_wycieczki)
-    VALUES (p_id_wycieczki, p_id_klienta, p_id_statusu, p_liczba_uczestnikow, p_suma_wycieczki);
-    
-    SET p_id_rezerwacji = LAST_INSERT_ID();
-    
-    -- Return the ID of the new reservation
-    SELECT p_id_rezerwacji AS id_rezerwacji;
-END //
-
-DELIMITER ;
+    DECLARE @p_id_rezerwacji INT;
+    IF @p_data_rezerwacji IS NULL
+    BEGIN
+        SET @p_data_rezerwacji = CONVERT(DATE, GETDATE());
+    END
+    INSERT INTO Rezerwacje_wycieczek (id_wycieczki, id_klienta, id_statusu, liczba_uczestnikow, data_rezerwacji)
+    VALUES (@p_id_wycieczki, @p_id_klienta, 1, @p_liczba_uczestnikow, @p_data_rezerwacji);    
+    SET @p_id_rezerwacji = SCOPE_IDENTITY();
+    SELECT @p_id_rezerwacji AS id_rezerwacji;
+END;
 ```
 
-- Opis: Procedura modyfikująca rezerwację. Aktualizuje szczegóły istniejącej rezerwacji w tabeli Rezerwacje_wycieczek na podstawie ID.
+- Opis: Procedura dodająca uczestnika do rezerwacji wycieczki. Sprawdza też, czy nie dodano za dużo uczestników.
 - kod DDL
 ```sql
-DELIMITER //
-
-CREATE PROCEDURE ModifyReservation (
-    IN p_id_rezerwacji INT,
-    IN p_id_wycieczki INT,
-    IN p_id_klienta INT,
-    IN p_id_statusu INT,
-    IN p_liczba_uczestnikow INT,
-    IN p_suma_wycieczki DECIMAL(10,2)
-)
+CREATE OR ALTER PROCEDURE AddParticipant
+    @p_id_rezerwacji INT,
+    @p_imie varchar(255),
+    @p_nazwisko varchar(255),
+    @p_telefon INT
+AS
 BEGIN
-    -- Update Rezerwacje_wycieczek
-    UPDATE Rezerwacje_wycieczek
-    SET id_wycieczki = p_id_wycieczki,
-        id_klienta = p_id_klienta,
-        id_statusu = p_id_statusu,
-        liczba_uczestnikow = p_liczba_uczestnikow,
-        suma_wycieczki = p_suma_wycieczki
-    WHERE id_rezerwacji = p_id_rezerwacji;
-END //
-
-DELIMITER ;
-
+    DECLARE @p_id_uczestnika INT;
+    IF (select count(*) from Uczestnicy where id_rezerwacji = @p_id_rezerwacji) < (select Liczba_uczestnikow from Rezerwacje_wycieczek where id_rezerwacji = @p_id_rezerwacji)
+    BEGIN
+        INSERT INTO Uczestnicy (id_rezerwacji, imie, nazwisko, telefon)
+        VALUES (@p_id_rezerwacji, @p_imie, @p_nazwisko, @p_telefon);    
+        SET @p_id_uczestnika = SCOPE_IDENTITY();
+        SELECT @p_id_uczestnika AS id_uczestnika;
+    END;
+    ELSE
+    BEGIN
+        SELECT 'Nie można dodać kolejnego uczestnika do tej rezerwacji' AS Message;
+    END
+END;
 ```
 
-- Opis: Procedura odwołująca rezerwację. Procedura usuwa wszystkie wpisy w tabelach Uczestnicy_uslugi, Uczestnicy, Rezerwacje_uslugi oraz Wplaty, zanim usunie rezerwację z tabeli Rezerwacje_wycieczek.
+- Opis: Procedura anulująca rezerwację. 
 - kod DDL
 ```sql
-DELIMITER //
-
-CREATE PROCEDURE CancelReservation (
-    IN p_id_rezerwacji INT
-)
+CREATE OR ALTER PROCEDURE CancelReservation
+    @p_id_rezerwacji INT
+AS
 BEGIN
-    -- Delete from Uczestnicy_uslugi
-    DELETE FROM Uczestnicy_uslugi
-    WHERE id_rezerwacji_uslugi IN (SELECT id_rezerwacji_uslugi FROM Rezerwacje_uslugi WHERE id_rezerwacji = p_id_rezerwacji);
-    
-    -- Delete from Uczestnicy
-    DELETE FROM Uczestnicy
-    WHERE id_rezerwacji = p_id_rezerwacji;
-    
-    -- Delete from Rezerwacje_uslugi
-    DELETE FROM Rezerwacje_uslugi
-    WHERE id_rezerwacji = p_id_rezerwacji;
-    
-    -- Delete from Wplaty
-    DELETE FROM Wplaty
-    WHERE id_rezerwacji = p_id_rezerwacji;
-    
-    -- Delete from Rezerwacje_wycieczek
-    DELETE FROM Rezerwacje_wycieczek
-    WHERE id_rezerwacji = p_id_rezerwacji;
-END //
-
-DELIMITER ;
-
+    IF EXISTS (SELECT 1 FROM Rezerwacje_wycieczek WHERE id_rezerwacji = @p_id_rezerwacji)
+    BEGIN
+        UPDATE Rezerwacje_wycieczek
+        SET id_statusu = 0
+        WHERE id_rezerwacji = @p_id_rezerwacji;
+        SELECT 'Reservation canceled successfully.' AS Message;
+    END
+    ELSE
+    BEGIN
+        SELECT 'Reservation not found.' AS Message;
+    END
+END;
 ```
-
-
 
 ## Triggery
 
-- Opis: Trigger aktualizujący liczbę uczestników w rezerwacji usługi po dodaniu nowego uczestnika.
+- Opis: Trigger aktualizujący liczbę dostępnych miejsc na wycieczkę po dodaniu rezerwacji
 - kod DDL
 ```sql
-CREATE TRIGGER update_participant_count_after_insert
-AFTER INSERT ON Uczestnicy_uslugi
-FOR EACH ROW
+CREATE TRIGGER t_update_available_places
+ON Rezerwacje_wycieczek
+AFTER INSERT
+AS
 BEGIN
-    UPDATE Rezerwacje_uslugi
-    SET liczba_uczestnikow = liczba_uczestnikow + 1
-    WHERE id_rezerwacji = NEW.id_rezerwacji_uslugi;
+    UPDATE Wycieczki
+    SET liczba_miejsc = liczba_miejsc - i.Liczba_uczestnikow
+    FROM Wycieczki w
+    JOIN INSERTED i ON w.id_wycieczki = i.id_wycieczki;
 END;
-
 ```
 
-- Opis: Trigger aktualizujący liczbę uczestników w rezerwacji usługi po usunięciu uczestnika:
+- Opis: Trigger aktualizujący liczbę dostępnych miejsc na wycieczkę po anulowaniu rezerwacji
 - kod DDL
 ```sql
-CREATE TRIGGER aktualizuj_liczbe_uczestnikow_po_usunieciu
-AFTER DELETE ON Uczestnicy_uslugi
-FOR EACH ROW
+CREATE TRIGGER t_update_available_places_2
+ON Rezerwacje_wycieczek
+AFTER UPDATE
+AS
 BEGIN
-    UPDATE Rezerwacje_uslugi
-    SET liczba_uczestnikow = liczba_uczestnikow - 1
-    WHERE id_rezerwacji = OLD.id_rezerwacji_uslugi;
+    IF UPDATE(id_statusu)
+    BEGIN
+        UPDATE Wycieczki
+        SET liczba_miejsc = liczba_miejsc + d.Liczba_uczestnikow
+        FROM Wycieczki w
+        JOIN DELETED d ON w.id_wycieczki = d.id_wycieczki
+        JOIN INSERTED i ON d.id_rezerwacji = i.id_rezerwacji
+        WHERE i.id_statusu = 0 AND d.id_statusu <> 0;
+    END
 END;
-
 ```
-
-- Opis: Trigger obliczający kwotę wpłat dla rezerwacji wycieczki po dodaniu nowej wpłaty.
-
-- kod DDL
-```sql
-CREATE TRIGGER oblicz_calosc_wplat_po_dodaniu
-AFTER INSERT ON Wplaty
-FOR EACH ROW
-BEGIN
-    UPDATE Rezerwacje_wycieczek
-    SET suma_wycieczki = suma_wycieczki + NEW.wplata
-    WHERE id_rezerwacji = NEW.id_rezerwacji;
-END;
-
-```
-
-- Opis: Trigger aktualizujący status rezerwacji wycieczki na podstawie liczby uczestników.
-
-
-- kod DDL
-```sql
-CREATE TRIGGER aktualizuj_status_po_dodaniu_uczestnika
-AFTER INSERT ON Uczestnicy
-FOR EACH ROW
-BEGIN
-    DECLARE total_participants INT;
-    SELECT liczba_uczestnikow INTO total_participants
-    FROM Rezerwacje_wycieczek
-    WHERE id_rezerwacji = NEW.id_rezerwacji;
-
-    IF total_participants >= (SELECT liczba_miejsc FROM Wycieczki WHERE id_wycieczki = (SELECT id_wycieczki FROM Rezerwacje_wycieczek WHERE id_rezerwacji = NEW.id_rezerwacji)) THEN
-        UPDATE Rezerwacje_wycieczek
-        SET id_statusu = (SELECT id_statusu FROM Statusy WHERE status = 'Full')
-        WHERE id_rezerwacji = NEW.id_rezerwacji;
-    END IF;
-END;
-
-```
-
-- Opis: Trigger dodający aktualną datę przy tworzeniu rezerwacji.
-
-- kod DDL
-```sql
-CREATE TRIGGER ustaw_date_rezerwacji
-BEFORE INSERT ON Rezerwacje_wycieczek
-FOR EACH ROW
-SET NEW.data_rozpoczecia_rezerw = IFNULL(NEW.data_rozpoczecia_rezerw, NOW());
-
-
-```
-
 
 # 4. Inne
 
-(informacja o sposobie wygenerowania danych, uprawnienia …)
+Uprawnienia:
+
+exec sp_addrolemember 'dbcreator', username ; - Może tworzyć i zmieniać ustawienia baz danych
+exec sp_addrolemember 'db_owner', username ; - Może przeprowadzić każde działanie na bazie danych
+exec sp_addrolemember 'db_denydatareader', username ; - NIE może czytać z żadnej tabeli.
